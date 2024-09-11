@@ -2,27 +2,32 @@ package com.example.chainofwords
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 
 class WordsViewModel : ViewModel() {
 
     val model = Model()
 
     val listModes: List<String> = listOf(
-        "questionStart",
-        "inputSecondWord",
-        "answerStart",
-        "next_word",
-        "game_over",
-        "new_word",
-        "error"
+        "questionStart",           //Добавление слов в "Model"
+        "inputSecondWord",         //Добавление слов в "Model"
+        "answerStart",             //получение ответа в Model
+        "next_word",               //получение ответа в Model
+        "game_over",               //состояние из Model
+        "new_word",                //Добавление слов в "Model"
+        "error"                    //- это не состояние Model,
+                                   // а результат операции в Model
     )
 
-    private val mutableModeFlow = MutableStateFlow(listModes[0])
-    val modeFlow = mutableModeFlow.asStateFlow()
+    private val mutableModeFlow = MutableSharedFlow<String>(replay = 1, extraBufferCapacity = 10)
+    val modeFlow = mutableModeFlow.asSharedFlow()
 
 
 //    enum class Modes {
@@ -34,14 +39,20 @@ class WordsViewModel : ViewModel() {
 
     }
 
-    var listWords: MutableList<String> = model.listChainOfWords
+   // var listWords: MutableList<String> = model.listChainOfWords
     var counterForCheck_Word = 0
-    var counterWords = listWords.lastIndex+1
+    val counterWords get() = model.countWords()
 
+    init {
+        viewModelScope.launch {
+            mutableModeFlow.emit(listModes[0])
+        }
+    }
 
     fun check_word(word: String) {
         val job = viewModelScope.launch {
             if (word == listWords[counterForCheck_Word]) {
+                mutableModeFlow.emit("X")
                 mutableModeFlow.emit(listModes[3])
                 counterForCheck_Word += 1
                 if (counterForCheck_Word == listWords.size) {
@@ -72,11 +83,11 @@ class WordsViewModel : ViewModel() {
 //            }
 //        }
         viewModelScope.launch {
-            if (new_word in model.listChainOfWords) {
+            if (!model.addWord(new_word))
+            {
                 mutableModeFlow.emit(listModes[6])
             } else {
-                model.listChainOfWords.add(new_word)
-                if (model.listChainOfWords.size == 1) {
+                if (model.countWords() == 1) {
                     mutableModeFlow.emit(listModes[1])
                 } else {
                     mutableModeFlow.emit(listModes[2])
@@ -92,12 +103,12 @@ class WordsViewModel : ViewModel() {
     }
 
     fun game_over(){
-        model.listChainOfWords.clear()
+        model.clear()
         viewModelScope.launch {
             mutableModeFlow.emit(listModes[0])
         }
     }
 
 
-    fun getModesFlow(): StateFlow<String> = modeFlow
+    fun getModesFlow(): SharedFlow<String> = modeFlow
 }
