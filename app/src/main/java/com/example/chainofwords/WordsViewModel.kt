@@ -9,9 +9,9 @@ import kotlinx.coroutines.launch
 
 class WordsViewModel : ViewModel() {
 
-    val model = Model()
+    private val model = Model()
 
-    val listModes: List<String> = listOf(
+    private val listModes: List<String> = listOf(
         "questionStart",
         "inputSecondWord",
         "answerStart",
@@ -22,7 +22,7 @@ class WordsViewModel : ViewModel() {
     )
 
     private val mutableModeFlow = MutableStateFlow(listModes[0])
-    val modeFlow = mutableModeFlow.asStateFlow()
+    private val modeFlow = mutableModeFlow.asStateFlow()
 
 
 //    enum class Modes {
@@ -34,14 +34,15 @@ class WordsViewModel : ViewModel() {
 
     }
 
-    var listWords: MutableList<String> = model.listChainOfWords
-    var counterForCheck_Word = 0
-    var counterWords = listWords.lastIndex+1
+    private var listWords: MutableList<String> = model.listChainOfWords
+    private var counterForCheck_Word = 0
+    val counterWords: Int get() = listWords.size
 
 
     fun check_word(word: String) {
         val job = viewModelScope.launch {
             if (word == listWords[counterForCheck_Word]) {
+                mutableModeFlow.emit("X")
                 mutableModeFlow.emit(listModes[3])
                 counterForCheck_Word += 1
                 if (counterForCheck_Word == listWords.size) {
@@ -58,19 +59,7 @@ class WordsViewModel : ViewModel() {
     }
 
     fun app_new_word(new_word: String) {
-//        if (new_word in model.listChainOfWords) {
-//            viewModelScope.launch { mutableModeFlow.emit(listModes[6]) }
-//        }
-//        else {
-//            model.listChainOfWords.add(new_word)
-//            viewModelScope.launch {
-//                if (model.listChainOfWords.size == 1) {
-//                    mutableModeFlow.emit(listModes[1])
-//                } else {
-//                    mutableModeFlow.emit(listModes[2])
-//                }
-//            }
-//        }
+
         viewModelScope.launch {
             if (new_word in model.listChainOfWords) {
                 mutableModeFlow.emit(listModes[6])

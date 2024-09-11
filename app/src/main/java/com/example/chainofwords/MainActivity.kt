@@ -32,9 +32,9 @@ class MainActivity : AppCompatActivity() {
 
 
         fun questionStart() {
-            btn.setText("Ввод")
-            textComand.setText(getString(R.string.questionStart))
-            textCounter.setText(wordsViewModel.counterWords.toString())
+            btn.text = "Ввод"
+            textComand.text = getString(R.string.questionStart)
+            textCounter.text = wordsViewModel.counterWords.toString()
             editText.setText("")
             btn.isEnabled = false
             editText.isInvisible = false
@@ -43,9 +43,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun inputSecondWord() {
-            btn.setText("Ввод")
-            textComand.setText(getString(R.string.inputSecondWord))
-            textCounter.setText(wordsViewModel.counterWords.toString())
+            btn.text = "Ввод"
+            textComand.text = getString(R.string.inputSecondWord)
+            textCounter.text = wordsViewModel.counterWords.toString()
             editText.setText("")
             btn.isEnabled = false
             editText.isInvisible = false
@@ -54,30 +54,28 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun answerStart() {
-            textComand.setText(getString(R.string.answerStart))
-            textCounter.setText(wordsViewModel.counterWords.toString())
+            textComand.text = getString(R.string.answerStart)
+            textCounter.text = wordsViewModel.counterWords.toString()
+            editText.setText("")
             btn.isEnabled = false
             editText.isInvisible = false
-            editText.setText("")
             btn.setBackgroundColor(getColor(R.color.blue1))
 
         }
 
         fun next_word() {
-            textComand.setText(getString(R.string.next_word))
-            textCounter.setText(wordsViewModel.counterWords.toString())
+            textComand.text = getString(R.string.next_word)
+            textCounter.text = wordsViewModel.counterWords.toString()
             editText.setText("")
             btn.isEnabled = false
             editText.isInvisible = false
-
             btn.setBackgroundColor(getColor(R.color.blue1))
-
         }
 
         fun game_over() {
-            btn.setText("Начать игру заново?")
-            textComand.setText(getString(R.string.game_over))
-            textCounter.setText(wordsViewModel.counterWords.toString())
+            btn.text = "Начать игру заново?"
+            textComand.text = getString(R.string.game_over)
+            textCounter.text = wordsViewModel.counterWords.toString()
             btn.isEnabled = true
             editText.isInvisible = true
             btn.setBackgroundColor(getColor(R.color.ping))
@@ -85,9 +83,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun new_word() {
-            btn.setText("Ввод")
-            textComand.setText(getString(R.string.new_word))
-            textCounter.setText(wordsViewModel.counterWords.toString())
+            btn.text = "Ввод"
+            textComand.text = getString(R.string.new_word)
+            textCounter.text = wordsViewModel.counterWords.toString()
             editText.setText("")
             btn.isEnabled = false
             editText.isInvisible = false
@@ -97,11 +95,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun error(){
-            textComand.setText(getString(R.string.error))
-            textCounter.setText(wordsViewModel.counterWords.toString())
+            textComand.text = getString(R.string.error)
+            textCounter.text = wordsViewModel.counterWords.toString()
             btn.setBackgroundColor(getColor(R.color.red1))
             btn.isEnabled = true
-            btn.setText("Ok")
+            btn.text = "Ok"
             editText.isInvisible = true
 
 
@@ -135,7 +133,6 @@ class MainActivity : AppCompatActivity() {
 
             if (editText.getText()
                     .contains(""".*[~?!"№;%:?*())+=<>? !@#$}{'$'%^&*+-0123456789].*""".toRegex()) ||
-//                editText.getText().contains(""".*\s.*""".toRegex()) ||
                 editText.getText()
                     .toString() == ""
             ) {
