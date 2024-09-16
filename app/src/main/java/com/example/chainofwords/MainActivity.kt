@@ -129,18 +129,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        fun openButton() {
+//        fun openButton() {
+//
+//            if (editText.getText()
+//                    .contains(""".*[~?!"№;%:?*())+=<>? !@#$}{'$'%^&*+-0123456789].*""".toRegex()) ||
+//                editText.getText()
+//                    .toString() == ""
+//            ) {
+//                btn.isEnabled = false
+//            } else btn.isEnabled = true
+//        }
 
-            if (editText.getText()
-                    .contains(""".*[~?!"№;%:?*())+=<>? !@#$}{'$'%^&*+-0123456789].*""".toRegex()) ||
-                editText.getText()
-                    .toString() == ""
-            ) {
-                btn.isEnabled = false
-            } else btn.isEnabled = true
-        }
-
-        editText.addTextChangedListener { openButton() }
+        editText.addTextChangedListener { wordsViewModel.openButton(editText.getText().toString()) }
 
         btn.setOnClickListener {
             when (modes) {
