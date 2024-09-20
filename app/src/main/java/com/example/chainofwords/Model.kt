@@ -57,7 +57,8 @@ class Model() {
     suspend fun add_new_word(new_word: String): Boolean {
         assert(
             mutableModeFlowFromModel.value in arrayOf(
-                Modes.AddNewWord
+                Modes.AddNewWord,
+                Modes.GameOver
             )
         )
 //      Здесь проверяем есть ли такое слово в списке. если уже есть, то функция вернет false
@@ -104,7 +105,6 @@ class Model() {
         } else {
 //          Если было введено неправильное слово, то передаем VM конец игры
             mutableModeFlowFromModel.emit(Modes.GameOver)
-            restart()
         }
 
 
@@ -114,6 +114,6 @@ class Model() {
         counterForCheck_Word = 0
         repositoryWords.clearlistChainOfWords()
         numberAddingWords = 2
-        mutableModeFlowFromModel.emit(Modes.AddNewWord)
+//        mutableModeFlowFromModel.emit(Modes.AddNewWord)
     }
 }

@@ -56,9 +56,7 @@ class WordsViewModel : ViewModel() {
         if (modelMode == Model.Modes.CheckWord && counterEnteredWords == 0) {mutableModeFlow.emit("answerStart")}
         if (modelMode == Model.Modes.CheckWord && counterEnteredWords > 0) {mutableModeFlow.emit("next_word")}
         if (modelMode == Model.Modes.AddNewWord && counterEnteredWords == 0){mutableModeFlow.emit("new_word")}
-        if (modelMode == Model.Modes.GameOver){
-            mutableModeFlow.emit("game_over")
-        }
+        if (modelMode == Model.Modes.GameOver){mutableModeFlow.emit("game_over")}
 
 //        if (nowInFlowModeFlowFromModel == Model.Modes.CheckWord && nowInFlowModeCounterForCheck_WordFromModel>0){}
     }
@@ -69,10 +67,8 @@ class WordsViewModel : ViewModel() {
 
     fun check_word(word: String) {
         counterEnteredWords++
-        scope.launch {
-            model.check_word(word)
-            analysisAndCreateFlowForView()
-        }
+        scope.launch { model.check_word(word)
+            analysisAndCreateFlowForView()}
 
     }
 
@@ -101,6 +97,9 @@ class WordsViewModel : ViewModel() {
     fun game_over(){
         viewModelScope.launch {
             mutableModeFlow.emit(listModes[0])
+            counterEnteredWords = 0
+            modelMode = Model.Modes.AddNewWord
+            model.restart()
         }
     }
 
