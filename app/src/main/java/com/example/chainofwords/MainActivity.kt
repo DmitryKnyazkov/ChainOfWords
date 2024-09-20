@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
 
         val wordsViewModel: WordsViewModel by viewModels()
 
+
         var modes: String = "questionStart"
 
         val image: ImageView = findViewById(R.id.image)
@@ -34,9 +35,9 @@ class MainActivity : AppCompatActivity() {
         fun questionStart() {
             btn.text = "Ввод"
             textComand.text = getString(R.string.questionStart)
-            textCounter.text = wordsViewModel.counterWords.toString()
+            textCounter.text = wordsViewModel.counterEnteredWords.toString()
             editText.setText("")
-            btn.isEnabled = false
+//            btn.isEnabled = false
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.green))
 
@@ -45,9 +46,9 @@ class MainActivity : AppCompatActivity() {
         fun inputSecondWord() {
             btn.text = "Ввод"
             textComand.text = getString(R.string.inputSecondWord)
-            textCounter.text = wordsViewModel.counterWords.toString()
+            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
             editText.setText("")
-            btn.isEnabled = false
+//            btn.isEnabled = false
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.green))
 
@@ -55,9 +56,9 @@ class MainActivity : AppCompatActivity() {
 
         fun answerStart() {
             textComand.text = getString(R.string.answerStart)
-            textCounter.text = wordsViewModel.counterWords.toString()
+            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
             editText.setText("")
-            btn.isEnabled = false
+//            btn.isEnabled = false
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.blue1))
 
@@ -65,9 +66,9 @@ class MainActivity : AppCompatActivity() {
 
         fun next_word() {
             textComand.text = getString(R.string.next_word)
-            textCounter.text = wordsViewModel.counterWords.toString()
+            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
             editText.setText("")
-            btn.isEnabled = false
+//            btn.isEnabled = false
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.blue1))
         }
@@ -75,8 +76,8 @@ class MainActivity : AppCompatActivity() {
         fun game_over() {
             btn.text = "Начать игру заново?"
             textComand.text = getString(R.string.game_over)
-            textCounter.text = wordsViewModel.counterWords.toString()
-            btn.isEnabled = true
+            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
+//            btn.isEnabled = true
             editText.isInvisible = true
             btn.setBackgroundColor(getColor(R.color.ping))
 
@@ -85,18 +86,18 @@ class MainActivity : AppCompatActivity() {
         fun new_word() {
             btn.text = "Ввод"
             textComand.text = getString(R.string.new_word)
-            textCounter.text = wordsViewModel.counterWords.toString()
+            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
             editText.setText("")
-            btn.isEnabled = false
+//            btn.isEnabled = false
             editText.isInvisible = false
 
             btn.setBackgroundColor(getColor(R.color.green))
 
         }
 
-        fun error(){
+        fun error() {
             textComand.text = getString(R.string.error)
-            textCounter.text = wordsViewModel.counterWords.toString()
+            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
             btn.setBackgroundColor(getColor(R.color.red1))
             btn.isEnabled = true
             btn.text = "Ok"
@@ -105,13 +106,21 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+
         lifecycleScope.launch {
 
             //для того чтобы работал нужно специальный implementation длбавлять в Билд
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-
+//                launch { wordsViewModel.analysisAndCreateFlowForView() }
                 launch {
-                    wordsViewModel.getModesFlow().collect {
+                    wordsViewModel.buttonFlow.collect {
+                        if (it == false){btn.isEnabled = false}
+                        else{btn.isEnabled = true}
+                    }
+                }
+                launch { wordsViewModel.giveFlowsMode() }
+                launch {
+                    wordsViewModel.modeFlow.collect {
                         modes = it
 
                         when (modes) {
@@ -125,9 +134,9 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-
             }
         }
+
 
 //        fun openButton() {
 //
@@ -152,6 +161,7 @@ class MainActivity : AppCompatActivity() {
                 "new_word" -> wordsViewModel.app_new_word(editText.getText().toString())
                 "error" -> wordsViewModel.errorToinputSecondWord()
             }
+            editText.setText("")
         }
     }
 }

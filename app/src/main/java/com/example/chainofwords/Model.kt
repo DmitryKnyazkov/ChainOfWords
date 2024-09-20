@@ -43,12 +43,15 @@ class Model() {
 
     private val repositoryWords = RepositoryWords()
 
+    private var numberAddingWords = 2
+
+//  по этому потоку передается состояие. либо "режим добавления нового слова", либо "режим сравнивания слов с цепочкой"
     private val mutableModeFlowFromModel = MutableStateFlow(Modes.AddNewWord)
+//   В этой переменной текущий номер слова в цепи для сравнения или количество слов даваемых в начале игры
     private var counterForCheck_Word = 0
 
     val modeFlowFromModel = mutableModeFlowFromModel.asStateFlow()
 
-    private var numberAddingWords = 2
 
 
     suspend fun add_new_word(new_word: String): Boolean {
@@ -57,15 +60,17 @@ class Model() {
                 Modes.AddNewWord
             )
         )
-
+//      Здесь проверяем есть ли такое слово в списке. если уже есть, то функция вернет false
         if (repositoryWords.wordExist(new_word)) {
             return false
         } else {
             repositoryWords.addNewWord(new_word)
+//          numberAddingWords контролирует количество вводимых слов. в начале игры это 2 слова,
+//          когда увеличивается цепочка, то это 1 слово. слова вводятся до того как numberAddingWords
+//          станет нулем. и произойдет имит нового состояния.
             numberAddingWords --
             if (numberAddingWords == 0) {mutableModeFlowFromModel.emit(Modes.CheckWord)}
-
-        return true
+            return true
         }
 
     }
@@ -92,13 +97,14 @@ class Model() {
 //              Обнуляем каунтер для последующих проверок слов начиная с первого в списке
                 counterForCheck_Word = 0
 //              numberAddingWords = 1 для того чтобы функции add_new_word сообщть, что добавить нужно
-//              только одно слово к списку. add_new_word в 65 строке вычтет -1 и в следующей строке
+//              только одно слово к списку. add_new_word в 65 строке вычтет 1 и в следующей строке
 //              поймет что слова для ввода закончились
                 numberAddingWords = 1
             }
         } else {
 //          Если было введено неправильное слово, то передаем VM конец игры
             mutableModeFlowFromModel.emit(Modes.GameOver)
+            restart()
         }
 
 
@@ -110,8 +116,4 @@ class Model() {
         numberAddingWords = 2
         mutableModeFlowFromModel.emit(Modes.AddNewWord)
     }
-
-//    разобраться!!
-//    fun getFlowFromModel() = modeFlowFromModel
-
 }
