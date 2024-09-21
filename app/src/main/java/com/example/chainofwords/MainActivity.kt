@@ -21,6 +21,9 @@ class MainActivity : AppCompatActivity() {
 
         val wordsViewModel: WordsViewModel by viewModels()
 
+        var counterForStart = 0
+
+
 
         var modes: String = "questionStart"
 
@@ -35,9 +38,8 @@ class MainActivity : AppCompatActivity() {
         fun questionStart() {
             btn.text = "Ввод"
             textComand.text = getString(R.string.questionStart)
-            textCounter.text = wordsViewModel.counterEnteredWords.toString()
+            wordsViewModel.getSizeWords()
             editText.setText("")
-//            btn.isEnabled = false
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.green))
 
@@ -46,9 +48,8 @@ class MainActivity : AppCompatActivity() {
         fun inputSecondWord() {
             btn.text = "Ввод"
             textComand.text = getString(R.string.inputSecondWord)
-            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
+            wordsViewModel.getSizeWords()
             editText.setText("")
-//            btn.isEnabled = false
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.green))
 
@@ -56,9 +57,8 @@ class MainActivity : AppCompatActivity() {
 
         fun answerStart() {
             textComand.text = getString(R.string.answerStart)
-            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
+            wordsViewModel.getSizeWords()
             editText.setText("")
-//            btn.isEnabled = false
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.blue1))
 
@@ -66,9 +66,8 @@ class MainActivity : AppCompatActivity() {
 
         fun next_word() {
             textComand.text = getString(R.string.next_word)
-            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
+            wordsViewModel.getSizeWords()
             editText.setText("")
-//            btn.isEnabled = false
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.blue1))
         }
@@ -76,8 +75,7 @@ class MainActivity : AppCompatActivity() {
         fun game_over() {
             btn.text = "Начать игру заново?"
             textComand.text = getString(R.string.game_over)
-            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
-//            btn.isEnabled = true
+            wordsViewModel.getSizeWords()
             editText.isInvisible = true
             btn.setBackgroundColor(getColor(R.color.ping))
 
@@ -86,9 +84,8 @@ class MainActivity : AppCompatActivity() {
         fun new_word() {
             btn.text = "Ввод"
             textComand.text = getString(R.string.new_word)
-            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
+            wordsViewModel.getSizeWords()
             editText.setText("")
-//            btn.isEnabled = false
             editText.isInvisible = false
 
             btn.setBackgroundColor(getColor(R.color.green))
@@ -97,7 +94,7 @@ class MainActivity : AppCompatActivity() {
 
         fun error() {
             textComand.text = getString(R.string.error)
-            textCounter.text = wordsViewModel.getcounterEnteredWords().toString()
+            wordsViewModel.getSizeWords()
             btn.setBackgroundColor(getColor(R.color.red1))
             btn.isEnabled = true
             btn.text = "Ok"
@@ -119,10 +116,11 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 launch { wordsViewModel.giveFlowsMode() }
+                launch { wordsViewModel.sizeWordsFlow.collect {textCounter.text = it.toString()} }
                 launch {
                     wordsViewModel.modeFlow.collect {
                         modes = it
-
+                        if (counterForStart == 0) {modes = "questionStart"}
                         when (modes) {
                             "questionStart" -> questionStart()
                             "inputSecondWord" -> inputSecondWord()
@@ -132,6 +130,7 @@ class MainActivity : AppCompatActivity() {
                             "new_word" -> new_word()
                             "error" -> error()
                         }
+                        counterForStart++
                     }
                 }
             }

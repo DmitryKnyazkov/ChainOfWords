@@ -30,8 +30,8 @@ class WordsViewModel : ViewModel() {
     private val MutableButtonFlow = MutableStateFlow(false)
     val buttonFlow = MutableButtonFlow.asStateFlow()
 
-//    private val MutableEdittextFlow = MutableStateFlow(false)
-//    val edittextFlow = MutableEdittextFlow.asStateFlow()
+    private val MutableSizeWordsFlow = MutableStateFlow(0)
+    val sizeWordsFlow = MutableSizeWordsFlow.asStateFlow()
 
     val scope = viewModelScope
 
@@ -69,9 +69,9 @@ class WordsViewModel : ViewModel() {
         counterEnteredWords++
         scope.launch { model.check_word(word)
             analysisAndCreateFlowForView()}
-
     }
 
+    fun getSizeWords() = scope.launch {MutableSizeWordsFlow.emit(model.getSizeWords())}
 
     fun app_new_word(new_word: String) {
         counterEnteredWords++

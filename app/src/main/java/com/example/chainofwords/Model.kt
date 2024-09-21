@@ -116,4 +116,8 @@ class Model() {
         numberAddingWords = 2
 //        mutableModeFlowFromModel.emit(Modes.AddNewWord)
     }
+
+    suspend fun getSizeWords(): Int {
+        return repositoryWords.getSizeWords()
+    }
 }
