@@ -1,21 +1,17 @@
 package com.example.chainofwords
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 class RepositoryWords() {
     private val listChainOfWords = mutableListOf<String>()
 
-    suspend fun addNewWord(new_word: String) {
-        listChainOfWords.add(new_word)
+    suspend fun addNewWord(newWord: String) {
+        listChainOfWords.add(newWord)
     }
 
-    suspend fun wordExist(new_word: String): Boolean {
-        return new_word in listChainOfWords
+    suspend fun wordExist(newWord: String): Boolean {
+        return newWord in listChainOfWords
     }
 
     suspend fun getSizeWords(): Int {
@@ -26,7 +22,7 @@ class RepositoryWords() {
         return listChainOfWords[index]
     }
 
-    suspend fun clearlistChainOfWords() {
+    suspend fun clearListChainOfWords() {
         listChainOfWords.clear()
     }
 }
@@ -54,7 +50,7 @@ class Model() {
 
 
 
-    suspend fun add_new_word(new_word: String): Boolean {
+    suspend fun addNewWord(newWord: String): Boolean {
         assert(
             mutableModeFlowFromModel.value in arrayOf(
                 Modes.AddNewWord,
@@ -62,10 +58,10 @@ class Model() {
             )
         )
 //      Здесь проверяем есть ли такое слово в списке. если уже есть, то функция вернет false
-        if (repositoryWords.wordExist(new_word)) {
+        if (repositoryWords.wordExist(newWord)) {
             return false
         } else {
-            repositoryWords.addNewWord(new_word)
+            repositoryWords.addNewWord(newWord)
 //          numberAddingWords контролирует количество вводимых слов. в начале игры это 2 слова,
 //          когда увеличивается цепочка, то это 1 слово. слова вводятся до того как numberAddingWords
 //          станет нулем. и произойдет имит нового состояния.
@@ -77,7 +73,7 @@ class Model() {
     }
 
 
-    suspend fun check_word(word: String) {
+    suspend fun checkWord(word: String) {
 
         assert(
             mutableModeFlowFromModel.value in arrayOf(
@@ -112,7 +108,7 @@ class Model() {
 
     suspend fun restart(){
         counterForCheck_Word = 0
-        repositoryWords.clearlistChainOfWords()
+        repositoryWords.clearListChainOfWords()
         numberAddingWords = 2
 //        mutableModeFlowFromModel.emit(Modes.AddNewWord)
     }

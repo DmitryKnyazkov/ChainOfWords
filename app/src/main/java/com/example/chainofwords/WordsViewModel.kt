@@ -2,9 +2,7 @@ package com.example.chainofwords
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
@@ -33,16 +31,17 @@ class WordsViewModel : ViewModel() {
     private val MutableSizeWordsFlow = MutableStateFlow(0)
     val sizeWordsFlow = MutableSizeWordsFlow.asStateFlow()
 
-    val scope = viewModelScope
+    private val scope = viewModelScope
 
-    var counterEnteredWords = 0
+    private var counterEnteredWords = 0
 
-    fun getcounterEnteredWords(): Int {return counterEnteredWords}
+    private var modelMode: Model.Modes = Model.Modes.AddNewWord
 
-    var modelMode: Model.Modes = Model.Modes.AddNewWord
 
-    suspend fun giveFlowsMode(){
-        model.modeFlowFromModel.collect{
+    //Название функции отражает то, что должен знать View,
+    // а не внутренние алгоритмы ViewModel
+    suspend fun onShow() {
+        model.modeFlowFromModel.collect {
             counterEnteredWords = 0
             modelMode = it
             analysisAndCreateFlowForView()
@@ -50,40 +49,54 @@ class WordsViewModel : ViewModel() {
     }
 
 
-    suspend fun analysisAndCreateFlowForView(){
-        if (modelMode == Model.Modes.AddNewWord && counterEnteredWords == 1){mutableModeFlow.emit("inputSecondWord")}
-        if (modelMode == Model.Modes.AddNewWord && counterEnteredWords > 1){mutableModeFlow.emit("new_word")}
-        if (modelMode == Model.Modes.CheckWord && counterEnteredWords == 0) {mutableModeFlow.emit("answerStart")}
-        if (modelMode == Model.Modes.CheckWord && counterEnteredWords > 0) {mutableModeFlow.emit("next_word")}
-        if (modelMode == Model.Modes.AddNewWord && counterEnteredWords == 0){mutableModeFlow.emit("questionStart")}
-        if (modelMode == Model.Modes.GameOver){mutableModeFlow.emit("game_over")}
+    private suspend fun analysisAndCreateFlowForView() {
+        mutableModeFlow.emit(
+            //При такой реализации проще понять, все ли варианты перебраны
+            //так же толоко один вызов emit
+            when (modelMode) {
+                Model.Modes.AddNewWord ->
+                    when (counterEnteredWords) {
+                        0 -> "questionStart"
+                        1 -> "inputSecondWord"
+                        else -> "new_word"
+                    }
+
+                Model.Modes.CheckWord ->
+                    when (counterEnteredWords) {
+                        0 -> "answerStart"
+                        else -> "next_word"
+                    }
+
+                Model.Modes.GameOver -> "game_over"
+            }
+        )
 
 //        if (nowInFlowModeFlowFromModel == Model.Modes.CheckWord && nowInFlowModeCounterForCheck_WordFromModel>0){}
     }
 
 
-
-
-
-    fun check_word(word: String) {
-        counterEnteredWords++
-        scope.launch { model.check_word(word)
-            analysisAndCreateFlowForView()}
-    }
-
-    fun getSizeWords() = scope.launch {MutableSizeWordsFlow.emit(model.getSizeWords())}
-
-    fun app_new_word(new_word: String) {
+    fun checkWord(word: String) {
         counterEnteredWords++
         scope.launch {
-            var resultRecording = model.add_new_word(new_word)
+            model.checkWord(word)
+            analysisAndCreateFlowForView()
+        }
+    }
 
-            if (resultRecording == false) {
+    private fun getSizeWords() = scope.launch { MutableSizeWordsFlow.emit(model.getSizeWords()) }
+
+    fun appNewWord(new_word: String) {
+        //Не надо прибавлять заранее
+        //counterEnteredWords++
+        scope.launch {
+            val resultRecording = model.addNewWord(new_word)
+
+            if (!resultRecording) {
 //              Если придет фолс, то имитем "error" ошибку и counterEnteredWords откати назад
-                counterEnteredWords--
+//                counterEnteredWords--
                 mutableModeFlow.emit("error")
-            }
-            else {
+            } else {
+                counterEnteredWords++
                 analysisAndCreateFlowForView()
                 getSizeWords()
             }
@@ -97,7 +110,7 @@ class WordsViewModel : ViewModel() {
         }
     }
 
-    fun game_over(){
+    fun game_over() {
         viewModelScope.launch {
             mutableModeFlow.emit(listModes[0])
             counterEnteredWords = 0
@@ -120,21 +133,17 @@ class WordsViewModel : ViewModel() {
                 MutableButtonFlow.emit(true)
             }
         }
-        if (mutableModeFlow.value == "error") {
+        if (mutableModeFlow.value in arrayOf("error","game_over")) {
             viewModelScope.launch {
                 MutableButtonFlow.emit(true)
             }
         }
-        if (mutableModeFlow.value == "game_over") {
-            viewModelScope.launch {
-                MutableButtonFlow.emit(true)
-            }
-        }
+//        if (mutableModeFlow.value == "game_over") {
+//            viewModelScope.launch {
+//                MutableButtonFlow.emit(true)
+//            }
+//        }
     }
-
-
-    fun getModesFlow(): StateFlow<String> = modeFlow
-//    fun getButtonFlow(): StateFlow<Boolean> = buttonFlow
 
 
 }

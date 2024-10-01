@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.core.view.isInvisible
@@ -117,11 +116,10 @@ class MainActivity : AppCompatActivity() {
 //                launch { wordsViewModel.analysisAndCreateFlowForView() }
                 launch {
                     wordsViewModel.buttonFlow.collect {
-                        if (it == false){btn.isEnabled = false}
-                        else{btn.isEnabled = true}
+                        btn.isEnabled = it
                     }
                 }
-                launch { wordsViewModel.giveFlowsMode() }
+                launch { wordsViewModel.onShow() }
                 launch { wordsViewModel.sizeWordsFlow.collect {textCounter.text = it.toString()} }
                 launch {
                     wordsViewModel.modeFlow.collect {
@@ -158,12 +156,12 @@ class MainActivity : AppCompatActivity() {
 
         btn.setOnClickListener {
             when (modes) {
-                "questionStart" -> wordsViewModel.app_new_word(editText.getText().toString())
-                "inputSecondWord" -> wordsViewModel.app_new_word(editText.getText().toString())
-                "answerStart" -> wordsViewModel.check_word(editText.getText().toString())
-                "next_word" ->wordsViewModel.check_word(editText.getText().toString())
+                "questionStart" -> wordsViewModel.appNewWord(editText.getText().toString())
+                "inputSecondWord" -> wordsViewModel.appNewWord(editText.getText().toString())
+                "answerStart" -> wordsViewModel.checkWord(editText.getText().toString())
+                "next_word" ->wordsViewModel.checkWord(editText.getText().toString())
                 "game_over" -> wordsViewModel.game_over()
-                "new_word" -> wordsViewModel.app_new_word(editText.getText().toString())
+                "new_word" -> wordsViewModel.appNewWord(editText.getText().toString())
                 "error" -> wordsViewModel.errorToinputSecondWord()
             }
             editText.setText("")
