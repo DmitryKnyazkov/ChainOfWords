@@ -44,7 +44,7 @@ class Model() {
 //  по этому потоку передается состояие. либо "режим добавления нового слова", либо "режим сравнивания слов с цепочкой"
     private val mutableModeFlowFromModel = MutableStateFlow(Modes.AddNewWord)
 //   В этой переменной текущий номер слова в цепи для сравнения или количество слов даваемых в начале игры
-    private var counterForCheck_Word = 0
+    private var counterForCheckWord = 0
 
     val modeFlowFromModel = mutableModeFlowFromModel.asStateFlow()
 
@@ -81,18 +81,18 @@ class Model() {
             )
         )
 //      Проверяем пришедшее слово (word) соответствует ли оно нужному слову из сохранненых
-        if (word == repositoryWords.getWordByIndex(counterForCheck_Word)) {
+        if (word == repositoryWords.getWordByIndex(counterForCheckWord)) {
 //          Если да то добавляем к счетчику единицу. Для того чтобы в следующей раз сравнивать
 //          следующее слово по списку
-            counterForCheck_Word += 1
+            counterForCheckWord += 1
 
 //          Проверяем все ли мы проверили слова из списка. Если каунтер равен колчеству слов в списке,
 //          значит мы все слова перебрали и список нужно увеличивать.
-            if (counterForCheck_Word == repositoryWords.getSizeWords()) {
+            if (counterForCheckWord == repositoryWords.getSizeWords()) {
 //              Посылаем во VM сигнал, что пора присылать новое слово для списка
                 mutableModeFlowFromModel.emit(Modes.AddNewWord)
 //              Обнуляем каунтер для последующих проверок слов начиная с первого в списке
-                counterForCheck_Word = 0
+                counterForCheckWord = 0
 //              numberAddingWords = 1 для того чтобы функции add_new_word сообщть, что добавить нужно
 //              только одно слово к списку. add_new_word в 65 строке вычтет 1 и в следующей строке
 //              поймет что слова для ввода закончились
@@ -107,7 +107,7 @@ class Model() {
     }
 
     suspend fun restart(){
-        counterForCheck_Word = 0
+        counterForCheckWord = 0
         repositoryWords.clearListChainOfWords()
         numberAddingWords = 2
 //        mutableModeFlowFromModel.emit(Modes.AddNewWord)

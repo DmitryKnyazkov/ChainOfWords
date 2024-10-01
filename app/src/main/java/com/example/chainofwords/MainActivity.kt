@@ -32,9 +32,15 @@ class MainActivity : AppCompatActivity() {
         val btn = findViewById<Button>(R.id.btn)
         val textCounter: TextView = findViewById<TextView>(R.id.textCounter)
 
+        fun setButtonTitle(modes: String) {
+            btn.text = when (modes) {
+                "game_over" -> "Начать игру заново?"
+                "error" -> "Ok"
+                else -> "Ввод"
+            }
+        }
 
         fun questionStart() {
-            btn.text = "Ввод"
             textComand.text = getString(R.string.questionStart)
             //Это костыль, тут не нужно
             //wordsViewModel.getSizeWords()
@@ -45,7 +51,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun inputSecondWord() {
-            btn.text = "Ввод"
             textComand.text = getString(R.string.inputSecondWord)
             //Это костыль, тут не нужно
             //wordsViewModel.getSizeWords()
@@ -65,7 +70,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        fun next_word() {
+        fun nextWord() {
             textComand.text = getString(R.string.next_word)
             //Это костыль, тут не нужно
             //wordsViewModel.getSizeWords()
@@ -74,8 +79,7 @@ class MainActivity : AppCompatActivity() {
             btn.setBackgroundColor(getColor(R.color.blue1))
         }
 
-        fun game_over() {
-            btn.text = "Начать игру заново?"
+        fun gameOver() {
             textComand.text = getString(R.string.game_over)
             //Это костыль, тут не нужно
             //wordsViewModel.getSizeWords()
@@ -84,8 +88,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        fun new_word() {
-            btn.text = "Ввод"
+        fun newWord() {
             textComand.text = getString(R.string.new_word)
             //Это костыль, тут не нужно
             //wordsViewModel.getSizeWords()
@@ -102,10 +105,7 @@ class MainActivity : AppCompatActivity() {
             //wordsViewModel.getSizeWords()
             btn.setBackgroundColor(getColor(R.color.red1))
             btn.isEnabled = true
-            btn.text = "Ok"
             editText.isInvisible = true
-
-
         }
 
 
@@ -124,14 +124,18 @@ class MainActivity : AppCompatActivity() {
                 launch {
                     wordsViewModel.modeFlow.collect {
                         modes = it
+
+                        setButtonTitle(modes)
+
+
 //                        if (counterForStart == 0) {modes = "questionStart"}
                         when (modes) {
                             "questionStart" -> questionStart()
                             "inputSecondWord" -> inputSecondWord()
                             "answerStart" -> answerStart()
-                            "next_word" -> next_word()
-                            "game_over" -> game_over()
-                            "new_word" -> new_word()
+                            "next_word" -> nextWord()
+                            "game_over" -> gameOver()
+                            "new_word" -> newWord()
                             "error" -> error()
                         }
   //                      counterForStart++
@@ -160,11 +164,13 @@ class MainActivity : AppCompatActivity() {
                 "inputSecondWord" -> wordsViewModel.appNewWord(editText.getText().toString())
                 "answerStart" -> wordsViewModel.checkWord(editText.getText().toString())
                 "next_word" ->wordsViewModel.checkWord(editText.getText().toString())
-                "game_over" -> wordsViewModel.game_over()
+                "game_over" -> wordsViewModel.gameOver()
                 "new_word" -> wordsViewModel.appNewWord(editText.getText().toString())
                 "error" -> wordsViewModel.errorToinputSecondWord()
             }
             editText.setText("")
         }
     }
+
+
 }

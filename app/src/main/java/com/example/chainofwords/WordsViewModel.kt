@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.properties.Delegates
 
 
 class WordsViewModel : ViewModel() {
@@ -25,26 +26,32 @@ class WordsViewModel : ViewModel() {
     private val mutableModeFlow = MutableStateFlow(listModes[0])
     val modeFlow = mutableModeFlow.asStateFlow()
 
-    private val MutableButtonFlow = MutableStateFlow(false)
-    val buttonFlow = MutableButtonFlow.asStateFlow()
+    private val mutableButtonFlow = MutableStateFlow(false)
+    val buttonFlow = mutableButtonFlow.asStateFlow()
 
-    private val MutableSizeWordsFlow = MutableStateFlow(0)
-    val sizeWordsFlow = MutableSizeWordsFlow.asStateFlow()
+    private val mutableSizeWordsFlow = MutableStateFlow(0)
+    val sizeWordsFlow = mutableSizeWordsFlow.asStateFlow()
 
     private val scope = viewModelScope
 
-    private var counterEnteredWords = 0
+    //При изменении свойства запускаем изменение mode
+    private var counterEnteredWords by Delegates.observable(0) {
+            _, _, _ -> scope.launch { analysisAndCreateFlowForView() }
+    }
 
-    private var modelMode: Model.Modes = Model.Modes.AddNewWord
+    //Два источника одного значения - оставим одно
+    //private var modelMode: Model.Modes = Model.Modes.AddNewWord
 
 
     //Название функции отражает то, что должен знать View,
     // а не внутренние алгоритмы ViewModel
     suspend fun onShow() {
-        model.modeFlowFromModel.collect {
-            counterEnteredWords = 0
-            modelMode = it
-            analysisAndCreateFlowForView()
+        //Лучше запустить от имени viewModel
+        scope.launch {
+            model.modeFlowFromModel.collect {
+                counterEnteredWords = 0
+                analysisAndCreateFlowForView()
+            }
         }
     }
 
@@ -53,25 +60,32 @@ class WordsViewModel : ViewModel() {
         mutableModeFlow.emit(
             //При такой реализации проще понять, все ли варианты перебраны
             //так же толоко один вызов emit
-            when (modelMode) {
-                Model.Modes.AddNewWord ->
-                    when (counterEnteredWords) {
-                        0 -> "questionStart"
-                        1 -> "inputSecondWord"
-                        else -> "new_word"
-                    }
-
-                Model.Modes.CheckWord ->
-                    when (counterEnteredWords) {
-                        0 -> "answerStart"
-                        else -> "next_word"
-                    }
-
-                Model.Modes.GameOver -> "game_over"
-            }
+            mapMode(model.modeFlowFromModel.value,
+                counterEnteredWords)
         )
 
 //        if (nowInFlowModeFlowFromModel == Model.Modes.CheckWord && nowInFlowModeCounterForCheck_WordFromModel>0){}
+    }
+
+
+    private fun mapMode(
+        modes: Model.Modes,
+        counterEnteredWords: Int
+    ) = when (modes) {
+        Model.Modes.AddNewWord ->
+            when (counterEnteredWords) {
+                0 -> "questionStart"
+                1 -> "inputSecondWord"
+                else -> "new_word"
+            }
+
+        Model.Modes.CheckWord ->
+            when (counterEnteredWords) {
+                0 -> "answerStart"
+                else -> "next_word"
+            }
+
+        Model.Modes.GameOver -> "game_over"
     }
 
 
@@ -79,17 +93,16 @@ class WordsViewModel : ViewModel() {
         counterEnteredWords++
         scope.launch {
             model.checkWord(word)
-            analysisAndCreateFlowForView()
         }
     }
 
-    private fun getSizeWords() = scope.launch { MutableSizeWordsFlow.emit(model.getSizeWords()) }
+    private fun emitCountWords() = scope.launch { mutableSizeWordsFlow.emit(model.getSizeWords()) }
 
-    fun appNewWord(new_word: String) {
+    fun appNewWord(newWord: String) {
         //Не надо прибавлять заранее
         //counterEnteredWords++
         scope.launch {
-            val resultRecording = model.addNewWord(new_word)
+            val resultRecording = model.addNewWord(newWord)
 
             if (!resultRecording) {
 //              Если придет фолс, то имитем "error" ошибку и counterEnteredWords откати назад
@@ -97,8 +110,7 @@ class WordsViewModel : ViewModel() {
                 mutableModeFlow.emit("error")
             } else {
                 counterEnteredWords++
-                analysisAndCreateFlowForView()
-                getSizeWords()
+                emitCountWords()
             }
 
         }
@@ -110,13 +122,14 @@ class WordsViewModel : ViewModel() {
         }
     }
 
-    fun game_over() {
+    fun gameOver() {
         viewModelScope.launch {
             mutableModeFlow.emit(listModes[0])
             counterEnteredWords = 0
-            modelMode = Model.Modes.AddNewWord
+            //Это явно костыль
+            //modelMode = Model.Modes.AddNewWord
             model.restart()
-            getSizeWords()
+            emitCountWords()
         }
     }
 
@@ -126,16 +139,16 @@ class WordsViewModel : ViewModel() {
             editText.toString() == ""
         ) {
             viewModelScope.launch {
-                MutableButtonFlow.emit(false)
+                mutableButtonFlow.emit(false)
             }
         } else {
             viewModelScope.launch {
-                MutableButtonFlow.emit(true)
+                mutableButtonFlow.emit(true)
             }
         }
         if (mutableModeFlow.value in arrayOf("error","game_over")) {
             viewModelScope.launch {
-                MutableButtonFlow.emit(true)
+                mutableButtonFlow.emit(true)
             }
         }
 //        if (mutableModeFlow.value == "game_over") {
