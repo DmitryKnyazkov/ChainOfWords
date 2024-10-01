@@ -21,7 +21,8 @@ class MainActivity : AppCompatActivity() {
 
         val wordsViewModel: WordsViewModel by viewModels()
 
-        var counterForStart = 0
+        //Это костыль - комментируем
+        //var counterForStart = 0
 
 
 
@@ -120,7 +121,7 @@ class MainActivity : AppCompatActivity() {
                 launch {
                     wordsViewModel.modeFlow.collect {
                         modes = it
-                        if (counterForStart == 0) {modes = "questionStart"}
+//                        if (counterForStart == 0) {modes = "questionStart"}
                         when (modes) {
                             "questionStart" -> questionStart()
                             "inputSecondWord" -> inputSecondWord()
@@ -130,7 +131,7 @@ class MainActivity : AppCompatActivity() {
                             "new_word" -> new_word()
                             "error" -> error()
                         }
-                        counterForStart++
+  //                      counterForStart++
                     }
                 }
             }

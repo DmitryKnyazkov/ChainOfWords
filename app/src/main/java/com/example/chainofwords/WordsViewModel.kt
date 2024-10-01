@@ -55,7 +55,7 @@ class WordsViewModel : ViewModel() {
         if (modelMode == Model.Modes.AddNewWord && counterEnteredWords > 1){mutableModeFlow.emit("new_word")}
         if (modelMode == Model.Modes.CheckWord && counterEnteredWords == 0) {mutableModeFlow.emit("answerStart")}
         if (modelMode == Model.Modes.CheckWord && counterEnteredWords > 0) {mutableModeFlow.emit("next_word")}
-        if (modelMode == Model.Modes.AddNewWord && counterEnteredWords == 0){mutableModeFlow.emit("new_word")}
+        if (modelMode == Model.Modes.AddNewWord && counterEnteredWords == 0){mutableModeFlow.emit("questionStart")}
         if (modelMode == Model.Modes.GameOver){mutableModeFlow.emit("game_over")}
 
 //        if (nowInFlowModeFlowFromModel == Model.Modes.CheckWord && nowInFlowModeCounterForCheck_WordFromModel>0){}
