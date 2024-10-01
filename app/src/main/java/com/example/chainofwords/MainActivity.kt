@@ -28,18 +28,17 @@ class MainActivity : AppCompatActivity() {
 
         var modes: String = "questionStart"
 
-        val image: ImageView = findViewById(R.id.image)
         val textComand: TextView = findViewById(R.id.textComand)
         val editText = findViewById<EditText>(R.id.editText)
         val btn = findViewById<Button>(R.id.btn)
-        val text2 = findViewById<TextView>(R.id.text2)
         val textCounter: TextView = findViewById<TextView>(R.id.textCounter)
 
 
         fun questionStart() {
             btn.text = "Ввод"
             textComand.text = getString(R.string.questionStart)
-            wordsViewModel.getSizeWords()
+            //Это костыль, тут не нужно
+            //wordsViewModel.getSizeWords()
             editText.setText("")
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.green))
@@ -49,7 +48,8 @@ class MainActivity : AppCompatActivity() {
         fun inputSecondWord() {
             btn.text = "Ввод"
             textComand.text = getString(R.string.inputSecondWord)
-            wordsViewModel.getSizeWords()
+            //Это костыль, тут не нужно
+            //wordsViewModel.getSizeWords()
             editText.setText("")
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.green))
@@ -58,7 +58,8 @@ class MainActivity : AppCompatActivity() {
 
         fun answerStart() {
             textComand.text = getString(R.string.answerStart)
-            wordsViewModel.getSizeWords()
+            //Это костыль, тут не нужно
+            //wordsViewModel.getSizeWords()
             editText.setText("")
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.blue1))
@@ -67,7 +68,8 @@ class MainActivity : AppCompatActivity() {
 
         fun next_word() {
             textComand.text = getString(R.string.next_word)
-            wordsViewModel.getSizeWords()
+            //Это костыль, тут не нужно
+            //wordsViewModel.getSizeWords()
             editText.setText("")
             editText.isInvisible = false
             btn.setBackgroundColor(getColor(R.color.blue1))
@@ -76,7 +78,8 @@ class MainActivity : AppCompatActivity() {
         fun game_over() {
             btn.text = "Начать игру заново?"
             textComand.text = getString(R.string.game_over)
-            wordsViewModel.getSizeWords()
+            //Это костыль, тут не нужно
+            //wordsViewModel.getSizeWords()
             editText.isInvisible = true
             btn.setBackgroundColor(getColor(R.color.ping))
 
@@ -85,7 +88,8 @@ class MainActivity : AppCompatActivity() {
         fun new_word() {
             btn.text = "Ввод"
             textComand.text = getString(R.string.new_word)
-            wordsViewModel.getSizeWords()
+            //Это костыль, тут не нужно
+            //wordsViewModel.getSizeWords()
             editText.setText("")
             editText.isInvisible = false
 
@@ -95,7 +99,8 @@ class MainActivity : AppCompatActivity() {
 
         fun error() {
             textComand.text = getString(R.string.error)
-            wordsViewModel.getSizeWords()
+            //Это костыль, тут не нужно
+            //wordsViewModel.getSizeWords()
             btn.setBackgroundColor(getColor(R.color.red1))
             btn.isEnabled = true
             btn.text = "Ok"

@@ -83,7 +83,10 @@ class WordsViewModel : ViewModel() {
                 counterEnteredWords--
                 mutableModeFlow.emit("error")
             }
-            else analysisAndCreateFlowForView()
+            else {
+                analysisAndCreateFlowForView()
+                getSizeWords()
+            }
 
         }
     }
@@ -100,6 +103,7 @@ class WordsViewModel : ViewModel() {
             counterEnteredWords = 0
             modelMode = Model.Modes.AddNewWord
             model.restart()
+            getSizeWords()
         }
     }
 
