@@ -50,6 +50,8 @@ dependencies {
     //Добавлено, чтобы был доступен repeatOnLifecycle
     implementation("androidx.activity:activity-ktx:1.8.2")
 
+// optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:$room_version")
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.appcompat:appcompat:1.7.0")

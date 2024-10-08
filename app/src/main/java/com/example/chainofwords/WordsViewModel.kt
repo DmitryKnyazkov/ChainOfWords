@@ -10,7 +10,7 @@ import kotlin.properties.Delegates
 
 class WordsViewModel : ViewModel() {
 
-    private val model = Model()
+    private lateinit var model: Model
 
     private val listModes: List<String> = listOf(
         "questionStart", // AddNewWord Создадим новую цепочку слов.Введите слово
@@ -156,6 +156,13 @@ class WordsViewModel : ViewModel() {
 //                MutableButtonFlow.emit(true)
 //            }
 //        }
+    }
+
+    fun setDB(db: AppDatabase) {
+        val repository = RepositoryWordsRoom(db)
+
+        model = Model(repository)
+
     }
 
 

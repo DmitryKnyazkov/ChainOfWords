@@ -11,6 +11,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.room.Room
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -23,7 +24,13 @@ class MainActivity : AppCompatActivity() {
         //Это костыль - комментируем
         //var counterForStart = 0
 
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "words"
+        ).build()
 
+
+        wordsViewModel.setDB(db)
 
         var modes: String = "questionStart"
 

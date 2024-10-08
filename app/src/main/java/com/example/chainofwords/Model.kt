@@ -3,26 +3,36 @@ package com.example.chainofwords
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class RepositoryWords() {
+interface RepositoryWords {
+    suspend fun addNewWord(newWord: String)
+    suspend fun wordExist(newWord: String): Boolean
+    suspend fun getSizeWords(): Int
+    suspend fun getWordByIndex(index: Int): String
+    suspend fun clearListChainOfWords()
+
+}
+
+class RepositoryWordsList(): RepositoryWords {
+
     private val listChainOfWords = mutableListOf<String>()
 
-    suspend fun addNewWord(newWord: String) {
+    override suspend fun addNewWord(newWord: String) {
         listChainOfWords.add(newWord)
     }
 
-    suspend fun wordExist(newWord: String): Boolean {
+    override suspend fun wordExist(newWord: String): Boolean {
         return newWord in listChainOfWords
     }
 
-    suspend fun getSizeWords(): Int {
+    override suspend fun getSizeWords(): Int {
         return listChainOfWords.size
     }
 
-    suspend fun getWordByIndex(index: Int): String {
+    override suspend fun getWordByIndex(index: Int): String {
         return listChainOfWords[index]
     }
 
-    suspend fun clearListChainOfWords() {
+    override suspend fun clearListChainOfWords() {
         listChainOfWords.clear()
     }
 }
@@ -31,13 +41,12 @@ class RepositoryRecords() {
     var record = 0
 }
 
-class Model() {
+class Model(private val repositoryWords: RepositoryWords = RepositoryWordsList()) {
 
     enum class Modes{
         AddNewWord, CheckWord, GameOver
     }
 
-    private val repositoryWords = RepositoryWords()
 
     private var numberAddingWords = 2
 
@@ -117,3 +126,4 @@ class Model() {
         return repositoryWords.getSizeWords()
     }
 }
+
