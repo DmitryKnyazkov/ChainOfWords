@@ -24,12 +24,14 @@ class MainActivity : AppCompatActivity() {
         //Это костыль - комментируем
         //var counterForStart = 0
 
+//        создание экземпляра базы данных приложения. может быть сделан, только там где есть
+//        контекст, т.е. в MainActivity
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "words"
         ).build()
 
-
+//По скольку экземпляр БД приложения в первую очередь нужен во Модуле, через VM передаем его туда.
         wordsViewModel.setDB(db)
 
         var modes: String = "questionStart"

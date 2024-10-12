@@ -55,7 +55,7 @@ class WordsViewModel : ViewModel() {
         }
     }
 
-
+// Эта функция посылает сигнал View на основании выполнения функции mapMode()
     private suspend fun analysisAndCreateFlowForView() {
         mutableModeFlow.emit(
             //При такой реализации проще понять, все ли варианты перебраны
@@ -67,7 +67,8 @@ class WordsViewModel : ViewModel() {
 //        if (nowInFlowModeFlowFromModel == Model.Modes.CheckWord && nowInFlowModeCounterForCheck_WordFromModel>0){}
     }
 
-
+// Эта функция сопоставляет текущее сосотояние и счетчик введеных слов и формирует сигнал в виде
+//    определенной строки. она может быть частью функции analysisAndCreateFlowForView()
     private fun mapMode(
         modes: Model.Modes,
         counterEnteredWords: Int
@@ -88,7 +89,7 @@ class WordsViewModel : ViewModel() {
         Model.Modes.GameOver -> "game_over"
     }
 
-
+// транспортирует из View в Model задачу проверить введенное слово
     fun checkWord(word: String) {
         counterEnteredWords++
         scope.launch {
@@ -96,8 +97,10 @@ class WordsViewModel : ViewModel() {
         }
     }
 
+//    собирает информацию о количестве слов в цепочке и передает ее View.
     private fun emitCountWords() = scope.launch { mutableSizeWordsFlow.emit(model.getSizeWords()) }
 
+//    добавляет через Модел слова в цепочку. и если слово уже есть в цепочке имитет ошибку во View
     fun appNewWord(newWord: String) {
         //Не надо прибавлять заранее
         //counterEnteredWords++
@@ -116,12 +119,15 @@ class WordsViewModel : ViewModel() {
         }
     }
 
+//    эта функция вызывается когда в режиме ОШИБКА нажалась кнопка. она сообщает View что надо
+//    перейти в режим ввода слова
     fun errorToinputSecondWord() {
         viewModelScope.launch {
             mutableModeFlow.emit(listModes[1])
         }
     }
 
+//    вызывается когда в конце игры. имитит View состояние начала игры. обнуляет в Моделе нужные значения.
     fun gameOver() {
         viewModelScope.launch {
             mutableModeFlow.emit(listModes[0])
@@ -133,6 +139,7 @@ class WordsViewModel : ViewModel() {
         }
     }
 
+//    управляет кнопкой во вью.
     fun openButton(editText: String) {
 
         if (editText.contains(""".*[~?!"№;%:*()+=<> @#$}{'^&+-0123456789].*""".toRegex()) ||
@@ -158,6 +165,11 @@ class WordsViewModel : ViewModel() {
 //        }
     }
 
+//    Вызывается сразу во Вью. в себе несет экземпляр базы данных приложения, который используется
+//    для создания экземляра класса RepositoryWordsRoom(db). Этот класс позволяет взаимодействовать
+//    с БД. экземляра класса RepositoryWordsRoom(db) используется для создания экземпляра
+//    Модели во ВьюМодуле. Экземпляр модели определяется только здесь, т.к. только здесь появляется
+//    val repository = RepositoryWordsRoom(db), который передается в Модель.
     fun setDB(db: AppDatabase) {
         val repository = RepositoryWordsRoom(db)
 

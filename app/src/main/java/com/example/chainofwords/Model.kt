@@ -3,6 +3,8 @@ package com.example.chainofwords
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+// Это скорее вспомогательный абстрактный класс, чтобы не забыть какие функции нужно реализовать
+// в классе который будет управлять БД
 interface RepositoryWords {
     suspend fun addNewWord(newWord: String)
     suspend fun wordExist(newWord: String): Boolean
@@ -12,6 +14,9 @@ interface RepositoryWords {
 
 }
 
+
+//Этот класс использовался, когда цепочка слов хранилась в списке, т.е. по сути в этом классе.
+// когда появилась БД то он уже не используется.
 class RepositoryWordsList(): RepositoryWords {
 
     private val listChainOfWords = mutableListOf<String>()
@@ -41,6 +46,8 @@ class RepositoryRecords() {
     var record = 0
 }
 
+// Этот класс определяет и отправляет состаяния во VM. в конструкторе private val repositoryWords
+// определяет взаимодействие с какой БД или репозиторием он будет работать.
 class Model(private val repositoryWords: RepositoryWords = RepositoryWordsList()) {
 
     enum class Modes{
@@ -60,6 +67,9 @@ class Model(private val repositoryWords: RepositoryWords = RepositoryWordsList()
 
 
     suspend fun addNewWord(newWord: String): Boolean {
+
+//        Здесь происходит некая проверка, утверждение о том, во соответствующее фло отправляется
+        //        именно определенные состояния. если во фло отправится что-то другое, то приложение упадет.
         assert(
             mutableModeFlowFromModel.value in arrayOf(
                 Modes.AddNewWord,
@@ -81,7 +91,8 @@ class Model(private val repositoryWords: RepositoryWords = RepositoryWordsList()
 
     }
 
-
+//Эта функция проверяет правильноть ответа и определяет все ли мы проверили слова из списка
+//    имитит нужный сигнал для VM
     suspend fun checkWord(word: String) {
 
         assert(
