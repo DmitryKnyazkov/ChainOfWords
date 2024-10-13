@@ -10,7 +10,7 @@ import kotlin.properties.Delegates
 
 class WordsViewModel : ViewModel() {
 
-    private val model = Model()
+    private lateinit var model: Model
 
     private val listModes: List<String> = listOf(
         "questionStart", // AddNewWord Создадим новую цепочку слов.Введите слово
@@ -50,12 +50,12 @@ class WordsViewModel : ViewModel() {
         scope.launch {
             model.modeFlowFromModel.collect {
                 counterEnteredWords = 0
-                analysisAndCreateFlowForView()
+//                analysisAndCreateFlowForView()
             }
         }
     }
 
-
+// Эта функция посылает сигнал View на основании выполнения функции mapMode()
     private suspend fun analysisAndCreateFlowForView() {
         mutableModeFlow.emit(
             //При такой реализации проще понять, все ли варианты перебраны
@@ -67,7 +67,8 @@ class WordsViewModel : ViewModel() {
 //        if (nowInFlowModeFlowFromModel == Model.Modes.CheckWord && nowInFlowModeCounterForCheck_WordFromModel>0){}
     }
 
-
+// Эта функция сопоставляет текущее сосотояние и счетчик введеных слов и формирует сигнал в виде
+//    определенной строки. она может быть частью функции analysisAndCreateFlowForView()
     private fun mapMode(
         modes: Model.Modes,
         counterEnteredWords: Int
@@ -88,7 +89,7 @@ class WordsViewModel : ViewModel() {
         Model.Modes.GameOver -> "game_over"
     }
 
-
+// транспортирует из View в Model задачу проверить введенное слово
     fun checkWord(word: String) {
         counterEnteredWords++
         scope.launch {
@@ -96,8 +97,10 @@ class WordsViewModel : ViewModel() {
         }
     }
 
+//    собирает информацию о количестве слов в цепочке и передает ее View.
     private fun emitCountWords() = scope.launch { mutableSizeWordsFlow.emit(model.getSizeWords()) }
 
+//    добавляет через Модел слова в цепочку. и если слово уже есть в цепочке имитет ошибку во View
     fun appNewWord(newWord: String) {
         //Не надо прибавлять заранее
         //counterEnteredWords++
@@ -116,12 +119,15 @@ class WordsViewModel : ViewModel() {
         }
     }
 
+//    эта функция вызывается когда в режиме ОШИБКА нажалась кнопка. она сообщает View что надо
+//    перейти в режим ввода слова
     fun errorToinputSecondWord() {
         viewModelScope.launch {
             mutableModeFlow.emit(listModes[1])
         }
     }
 
+//    вызывается когда в конце игры. имитит View состояние начала игры. обнуляет в Моделе нужные значения.
     fun gameOver() {
         viewModelScope.launch {
             mutableModeFlow.emit(listModes[0])
@@ -133,29 +139,67 @@ class WordsViewModel : ViewModel() {
         }
     }
 
+//    управляет кнопкой во вью.
     fun openButton(editText: String) {
 
-        if (editText.contains(""".*[~?!"№;%:*()+=<> @#$}{'^&+-0123456789].*""".toRegex()) ||
-            editText.toString() == ""
-        ) {
-            viewModelScope.launch {
-                mutableButtonFlow.emit(false)
-            }
-        } else {
-            viewModelScope.launch {
-                mutableButtonFlow.emit(true)
-            }
-        }
-        if (mutableModeFlow.value in arrayOf("error","game_over")) {
-            viewModelScope.launch {
-                mutableButtonFlow.emit(true)
-            }
-        }
-//        if (mutableModeFlow.value == "game_over") {
+    if (editText.contains(""".*[~?!"№;%:*()+=<> @#$}{'^&+-0123456789].*""".toRegex()) || editText.toString() == "") {
+        if (mutableModeFlow.value !in arrayOf(
+                "error",
+                "game_over",
+//
+//                "questionStart", // AddNewWord Создадим новую цепочку слов.Введите слово
+//                "inputSecondWord", // AddNewWord Введите следующее слово в цепочку
+//                "answerStart", // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
+//                "next_word", // CheckWord Вы ответили верно. Вводите следующее слово
+//                "new_word", // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
+            )) { viewModelScope.launch { mutableButtonFlow.emit(false)}
+        } else {viewModelScope.launch {  mutableButtonFlow.emit(true)}}
+
+    } else {viewModelScope.launch {
+        mutableButtonFlow.emit(true)
+    }}
+
+//
+//        if ((editText.contains(""".*[~?!"№;%:*()+=<> @#$}{'^&+-0123456789].*""".toRegex()) ||
+//            editText.toString() == "")
+//            && mutableModeFlow.value in arrayOf(
+//                "questionStart", // AddNewWord Создадим новую цепочку слов.Введите слово
+//                "inputSecondWord", // AddNewWord Введите следующее слово в цепочку
+//                "answerStart", // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
+//                "next_word", // CheckWord Вы ответили верно. Вводите следующее слово
+//                "new_word", // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
+//            )
+//        ) {
 //            viewModelScope.launch {
-//                MutableButtonFlow.emit(true)
+//                mutableButtonFlow.emit(false)
+//            }
+//        } else {
+//            viewModelScope.launch {
+//                mutableButtonFlow.emit(true)
 //            }
 //        }
+//        if (mutableModeFlow.value in arrayOf("error","game_over")) {
+//            viewModelScope.launch {
+//                mutableButtonFlow.emit(true)
+//            }
+//        }
+//        if (mutableModeFlow.value == "game_over") {
+//            viewModelScope.launch {
+//                mutableButtonFlow.emit(true)
+//            }
+//        }
+    }
+
+//    Вызывается сразу во Вью. в себе несет экземпляр базы данных приложения, который используется
+//    для создания экземляра класса RepositoryWordsRoom(db). Этот класс позволяет взаимодействовать
+//    с БД. экземляра класса RepositoryWordsRoom(db) используется для создания экземпляра
+//    Модели во ВьюМодуле. Экземпляр модели определяется только здесь, т.к. только здесь появляется
+//    val repository = RepositoryWordsRoom(db), который передается в Модель.
+    fun setDB(db: AppDatabase) {
+        val repository = RepositoryWordsRoom(db)
+
+        model = Model(repository)
+
     }
 
 

@@ -11,6 +11,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.room.Room
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -23,7 +24,15 @@ class MainActivity : AppCompatActivity() {
         //Это костыль - комментируем
         //var counterForStart = 0
 
+//        создание экземпляра базы данных приложения. может быть сделан, только там где есть
+//        контекст, т.е. в MainActivity
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "words"
+        ).build()
 
+//По скольку экземпляр БД приложения в первую очередь нужен во Модуле, через VM передаем его туда.
+        wordsViewModel.setDB(db)
 
         var modes: String = "questionStart"
 
@@ -94,6 +103,7 @@ class MainActivity : AppCompatActivity() {
             //wordsViewModel.getSizeWords()
             editText.setText("")
             editText.isInvisible = false
+            btn.isEnabled = true
 
             btn.setBackgroundColor(getColor(R.color.green))
 
@@ -104,7 +114,6 @@ class MainActivity : AppCompatActivity() {
             //Это костыль, тут не нужно
             //wordsViewModel.getSizeWords()
             btn.setBackgroundColor(getColor(R.color.red1))
-            btn.isEnabled = true
             editText.isInvisible = true
         }
 
@@ -171,6 +180,11 @@ class MainActivity : AppCompatActivity() {
             editText.setText("")
         }
     }
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        wordsViewModel.gameOver()
+//        // Освободить ресурсы, которые больше не нужны активности
+//    }
 
 
 }
