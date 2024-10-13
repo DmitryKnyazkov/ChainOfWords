@@ -15,11 +15,15 @@ import androidx.room.Room
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var viewModel: WordsViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val wordsViewModel: WordsViewModel by viewModels()
+        viewModel = wordsViewModel
 
         //Это костыль - комментируем
         //var counterForStart = 0
@@ -135,6 +139,7 @@ class MainActivity : AppCompatActivity() {
                         modes = it
 
                         setButtonTitle(modes)
+                        wordsViewModel.openButton(editText.getText().toString(), modes)
 
 
 //                        if (counterForStart == 0) {modes = "questionStart"}
@@ -165,7 +170,7 @@ class MainActivity : AppCompatActivity() {
 //            } else btn.isEnabled = true
 //        }
 
-        editText.addTextChangedListener { wordsViewModel.openButton(editText.getText().toString()) }
+        editText.addTextChangedListener { wordsViewModel.openButton(editText.getText().toString(), modes) }
 
         btn.setOnClickListener {
             when (modes) {
@@ -182,7 +187,7 @@ class MainActivity : AppCompatActivity() {
     }
 //    override fun onDestroy() {
 //        super.onDestroy()
-//        wordsViewModel.gameOver()
+//        viewModel.gameOver()
 //        // Освободить ресурсы, которые больше не нужны активности
 //    }
 

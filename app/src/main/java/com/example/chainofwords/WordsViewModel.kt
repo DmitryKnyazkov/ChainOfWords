@@ -140,44 +140,44 @@ class WordsViewModel : ViewModel() {
     }
 
 //    управляет кнопкой во вью.
-    fun openButton(editText: String) {
+    fun openButton(editText: String, mode: String) {
 
-    if (editText.contains(""".*[~?!"№;%:*()+=<> @#$}{'^&+-0123456789].*""".toRegex()) || editText.toString() == "") {
-        if (mutableModeFlow.value !in arrayOf(
-                "error",
-                "game_over",
+//    if (editText.contains(""".*[~?!"№;%:*()+=<> @#$}{'^&+-0123456789].*""".toRegex()) || editText.toString() == "") {
+//        if (mode !in arrayOf(
+//                "error",
+//                "game_over",
+////
+////                "questionStart", // AddNewWord Создадим новую цепочку слов.Введите слово
+////                "inputSecondWord", // AddNewWord Введите следующее слово в цепочку
+////                "answerStart", // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
+////                "next_word", // CheckWord Вы ответили верно. Вводите следующее слово
+////                "new_word", // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
+//            )) { viewModelScope.launch { mutableButtonFlow.emit(false)}
+//        } else {viewModelScope.launch {  mutableButtonFlow.emit(true)}}
 //
-//                "questionStart", // AddNewWord Создадим новую цепочку слов.Введите слово
-//                "inputSecondWord", // AddNewWord Введите следующее слово в цепочку
-//                "answerStart", // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
-//                "next_word", // CheckWord Вы ответили верно. Вводите следующее слово
-//                "new_word", // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
-            )) { viewModelScope.launch { mutableButtonFlow.emit(false)}
-        } else {viewModelScope.launch {  mutableButtonFlow.emit(true)}}
+//    } else {viewModelScope.launch {
+//        mutableButtonFlow.emit(true)
+//    }}
 
-    } else {viewModelScope.launch {
-        mutableButtonFlow.emit(true)
-    }}
 
-//
-//        if ((editText.contains(""".*[~?!"№;%:*()+=<> @#$}{'^&+-0123456789].*""".toRegex()) ||
-//            editText.toString() == "")
-//            && mutableModeFlow.value in arrayOf(
-//                "questionStart", // AddNewWord Создадим новую цепочку слов.Введите слово
-//                "inputSecondWord", // AddNewWord Введите следующее слово в цепочку
-//                "answerStart", // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
-//                "next_word", // CheckWord Вы ответили верно. Вводите следующее слово
-//                "new_word", // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
-//            )
-//        ) {
-//            viewModelScope.launch {
-//                mutableButtonFlow.emit(false)
-//            }
-//        } else {
-//            viewModelScope.launch {
-//                mutableButtonFlow.emit(true)
-//            }
-//        }
+        if ((editText.contains(""".*[~?!"№;%:*()+=<> @#$}{'^&+-0123456789].*""".toRegex()) ||
+            editText.toString() == "")
+            && mode in arrayOf(
+                "questionStart", // AddNewWord Создадим новую цепочку слов.Введите слово
+                "inputSecondWord", // AddNewWord Введите следующее слово в цепочку
+                "answerStart", // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
+                "next_word", // CheckWord Вы ответили верно. Вводите следующее слово
+                "new_word", // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
+            )
+        ) {
+            viewModelScope.launch {
+                mutableButtonFlow.emit(false)
+            }
+        } else {
+            viewModelScope.launch {
+                mutableButtonFlow.emit(true)
+            }
+        }
 //        if (mutableModeFlow.value in arrayOf("error","game_over")) {
 //            viewModelScope.launch {
 //                mutableButtonFlow.emit(true)
