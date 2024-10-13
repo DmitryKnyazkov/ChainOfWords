@@ -130,7 +130,7 @@ class Model(private val repositoryWords: RepositoryWords = RepositoryWordsList()
         counterForCheckWord = 0
         repositoryWords.clearListChainOfWords()
         numberAddingWords = 2
-//        mutableModeFlowFromModel.emit(Modes.AddNewWord)
+        mutableModeFlowFromModel.emit(Modes.AddNewWord)
     }
 
     suspend fun getSizeWords(): Int {

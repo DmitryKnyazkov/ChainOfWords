@@ -103,6 +103,7 @@ class MainActivity : AppCompatActivity() {
             //wordsViewModel.getSizeWords()
             editText.setText("")
             editText.isInvisible = false
+            btn.isEnabled = true
 
             btn.setBackgroundColor(getColor(R.color.green))
 
@@ -113,7 +114,6 @@ class MainActivity : AppCompatActivity() {
             //Это костыль, тут не нужно
             //wordsViewModel.getSizeWords()
             btn.setBackgroundColor(getColor(R.color.red1))
-            btn.isEnabled = true
             editText.isInvisible = true
         }
 
@@ -180,6 +180,11 @@ class MainActivity : AppCompatActivity() {
             editText.setText("")
         }
     }
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        wordsViewModel.gameOver()
+//        // Освободить ресурсы, которые больше не нужны активности
+//    }
 
 
 }
