@@ -12,35 +12,38 @@ interface RepositoryWords {
     suspend fun getWordByIndex(index: Int): String
     suspend fun clearListChainOfWords()
 
+    suspend fun addRecord(record: Record)
+    suspend fun getLastRecord(): String
+
 }
 
 
-//Этот класс использовался, когда цепочка слов хранилась в списке, т.е. по сути в этом классе.
-// когда появилась БД то он уже не используется.
-class RepositoryWordsList(): RepositoryWords {
-
-    private val listChainOfWords = mutableListOf<String>()
-
-    override suspend fun addNewWord(newWord: String) {
-        listChainOfWords.add(newWord)
-    }
-
-    override suspend fun wordExist(newWord: String): Boolean {
-        return newWord in listChainOfWords
-    }
-
-    override suspend fun getSizeWords(): Int {
-        return listChainOfWords.size
-    }
-
-    override suspend fun getWordByIndex(index: Int): String {
-        return listChainOfWords[index]
-    }
-
-    override suspend fun clearListChainOfWords() {
-        listChainOfWords.clear()
-    }
-}
+////Этот класс использовался, когда цепочка слов хранилась в списке, т.е. по сути в этом классе.
+//// когда появилась БД то он уже не используется.
+//class RepositoryWordsList(): RepositoryWords {
+//
+//    private val listChainOfWords = mutableListOf<String>()
+//
+//    override suspend fun addNewWord(newWord: String) {
+//        listChainOfWords.add(newWord)
+//    }
+//
+//    override suspend fun wordExist(newWord: String): Boolean {
+//        return newWord in listChainOfWords
+//    }
+//
+//    override suspend fun getSizeWords(): Int {
+//        return listChainOfWords.size
+//    }
+//
+//    override suspend fun getWordByIndex(index: Int): String {
+//        return listChainOfWords[index]
+//    }
+//
+//    override suspend fun clearListChainOfWords() {
+//        listChainOfWords.clear()
+//    }
+//}
 
 class RepositoryRecords() {
     var record = 0
@@ -48,7 +51,7 @@ class RepositoryRecords() {
 
 // Этот класс определяет и отправляет состаяния во VM. в конструкторе private val repositoryWords
 // определяет взаимодействие с какой БД или репозиторием он будет работать.
-class Model(private val repositoryWords: RepositoryWords = RepositoryWordsList()) {
+class Model(private val repositoryWords: RepositoryWords ) {
 
     enum class Modes{
         AddNewWord, CheckWord, GameOver
@@ -144,11 +147,9 @@ class Model(private val repositoryWords: RepositoryWords = RepositoryWordsList()
         val oldRecord = repositoryRecords.record
         return record.toString()
     }
-    var record = 9
-    suspend fun getRecord(): String {
-        record++
 
-        return record.toString()
+    suspend fun getRecord(): String {
+        return repositoryWords.getLastRecord()
     }
 }
 

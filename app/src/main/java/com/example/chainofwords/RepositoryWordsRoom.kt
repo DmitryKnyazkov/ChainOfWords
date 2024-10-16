@@ -71,20 +71,20 @@ var uid: Int = 0 }
 
 
 // Этот интерфейс хронит и определяет методы взаимодействия с БД
-//@Dao
-//interface RecordsDao {
-//    // addNewWord
-//    @Insert
-//    suspend fun insertAll(vararg record: Record) // изначально было (vararg records: Record)
-//
-//
-//
-//    // getWordByIndex
-//    @Query("SELECT record FROM records order by uid desc limit 1")
-//    suspend fun getLastRecord(): String
+@Dao
+interface RecordsDao {
+    // addNewWord
+    @Insert
+    suspend fun insertAll(vararg record: Record) // изначально было (vararg records: Record)
 
 
-//}
+
+    // getWordByIndex
+    @Query("SELECT record FROM records order by uid desc limit 1") //SELECT record FROM records order by uid desc limit 1
+    suspend fun getLastRecord(): String
+
+
+}
 
 
 
@@ -98,17 +98,17 @@ var uid: Int = 0 }
 // entities = [Word::class] - здесь информация о таблице,
 // abstract fun wordsDao(): WordsDao - здесь информация о метадах.
 // Экземпляр этого класса особым образом создается только там где есть контекст, т.е. в активити
-@Database(entities = [Word::class], version = 1)
+@Database(entities = [Word::class, Record::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun wordsDao(): WordsDao
-//    abstract fun recordsDao(): RecordsDao
+    abstract fun recordsDao(): RecordsDao
 }
 
 // Этот класс позволяет взаимодействовать с базой данных
 class RepositoryWordsRoom(private val roomDatabase: AppDatabase): RepositoryWords {
 
     private val wordsDao = roomDatabase.wordsDao()
-//    private val recordsDao = roomDatabase.recordsDao()
+    private val recordsDao = roomDatabase.recordsDao()
 
     override suspend fun addNewWord(newWord: String) {
         wordsDao.insertAll(Word(newWord))
@@ -131,12 +131,12 @@ class RepositoryWordsRoom(private val roomDatabase: AppDatabase): RepositoryWord
     }
 
 
-//    suspend fun addRecord(newRecord: Int) {
-//        recordsDao.insertAll(Record(newRecord.toString())) // record: Record
-//    }
-//
-//    suspend fun getLastRecord(): String {
-//        return recordsDao.getLastRecord()
-//    }
+    override suspend fun addRecord(record: Record) {
+        recordsDao.insertAll(record) // record: Record
+    }
+
+    override suspend fun getLastRecord(): String {
+        return recordsDao.getLastRecord()
+    }
 
 }
