@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Chain of words</string>
 
+
     <string name="questionStart">Создадим новую цепочку слов.Введите слово</string>
     <string name="inputSecondWord">Введите следующее слово в цепочку</string>
     <string name="answerStart">Цепочка слов создана.Воспроизведем ее. Введите слово</string>

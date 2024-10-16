@@ -38,12 +38,19 @@ class MainActivity : AppCompatActivity() {
 //По скольку экземпляр БД приложения в первую очередь нужен во Модуле, через VM передаем его туда.
         wordsViewModel.setDB(db)
 
+        wordsViewModel.emitRecord()
+
+        // Вызывается чтобы облулить значения в модели
+        wordsViewModel.gameOver()
+
         var modes: String = "questionStart"
 
         val textComand: TextView = findViewById(R.id.textComand)
         val editText = findViewById<EditText>(R.id.editText)
         val btn = findViewById<Button>(R.id.btn)
         val textCounter: TextView = findViewById<TextView>(R.id.textCounter)
+        val textRecord: TextView = findViewById<TextView>(R.id.textRecord)
+        val textTimeRecord: TextView = findViewById<TextView>(R.id.textTimeRecord)
 
         fun setButtonTitle(modes: String) {
             btn.text = when (modes) {
@@ -134,6 +141,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 launch { wordsViewModel.onShow() }
                 launch { wordsViewModel.sizeWordsFlow.collect {textCounter.text = it.toString()} }
+                launch { wordsViewModel.recordFlow.collect {textRecord.text = it.toString()} }
                 launch {
                     wordsViewModel.modeFlow.collect {
                         modes = it
@@ -141,8 +149,6 @@ class MainActivity : AppCompatActivity() {
                         setButtonTitle(modes)
                         wordsViewModel.openButton(editText.getText().toString(), modes)
 
-
-//                        if (counterForStart == 0) {modes = "questionStart"}
                         when (modes) {
                             "questionStart" -> questionStart()
                             "inputSecondWord" -> inputSecondWord()

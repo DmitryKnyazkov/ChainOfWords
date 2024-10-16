@@ -10,6 +10,8 @@ import kotlin.properties.Delegates
 
 class WordsViewModel : ViewModel() {
 
+
+
     private lateinit var model: Model
 
     private val listModes: List<String> = listOf(
@@ -32,12 +34,19 @@ class WordsViewModel : ViewModel() {
     private val mutableSizeWordsFlow = MutableStateFlow(0)
     val sizeWordsFlow = mutableSizeWordsFlow.asStateFlow()
 
+    private val mutableRecordFlow = MutableStateFlow("0")
+    val recordFlow = mutableRecordFlow.asStateFlow()
+
     private val scope = viewModelScope
 
     //При изменении свойства запускаем изменение mode
     private var counterEnteredWords by Delegates.observable(0) {
             _, _, _ -> scope.launch { analysisAndCreateFlowForView() }
     }
+
+
+
+
 
     //Два источника одного значения - оставим одно
     //private var modelMode: Model.Modes = Model.Modes.AddNewWord
@@ -49,7 +58,7 @@ class WordsViewModel : ViewModel() {
         //Лучше запустить от имени viewModel
         scope.launch {
             model.modeFlowFromModel.collect {
-                counterEnteredWords = 0
+                counterEnteredWords = -1
 //                analysisAndCreateFlowForView()
             }
         }
@@ -100,6 +109,8 @@ class WordsViewModel : ViewModel() {
 //    собирает информацию о количестве слов в цепочке и передает ее View.
     private fun emitCountWords() = scope.launch { mutableSizeWordsFlow.emit(model.getSizeWords()) }
 
+    fun emitRecord() = scope.launch { mutableRecordFlow.emit(model.getRecord()) }
+
 //    добавляет через Модел слова в цепочку. и если слово уже есть в цепочке имитет ошибку во View
     fun appNewWord(newWord: String) {
         //Не надо прибавлять заранее
@@ -131,34 +142,18 @@ class WordsViewModel : ViewModel() {
     fun gameOver() {
         viewModelScope.launch {
             mutableModeFlow.emit(listModes[0])
-            counterEnteredWords = 0
+            counterEnteredWords = -1
             //Это явно костыль
             //modelMode = Model.Modes.AddNewWord
             model.restart()
+            model.checkRecord()
             emitCountWords()
+            emitRecord()
         }
     }
 
 //    управляет кнопкой во вью.
     fun openButton(editText: String, mode: String) {
-
-//    if (editText.contains(""".*[~?!"№;%:*()+=<> @#$}{'^&+-0123456789].*""".toRegex()) || editText.toString() == "") {
-//        if (mode !in arrayOf(
-//                "error",
-//                "game_over",
-////
-////                "questionStart", // AddNewWord Создадим новую цепочку слов.Введите слово
-////                "inputSecondWord", // AddNewWord Введите следующее слово в цепочку
-////                "answerStart", // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
-////                "next_word", // CheckWord Вы ответили верно. Вводите следующее слово
-////                "new_word", // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
-//            )) { viewModelScope.launch { mutableButtonFlow.emit(false)}
-//        } else {viewModelScope.launch {  mutableButtonFlow.emit(true)}}
-//
-//    } else {viewModelScope.launch {
-//        mutableButtonFlow.emit(true)
-//    }}
-
 
         if ((editText.contains(""".*[~?!"№;%:*()+=<> @#$}{'^&+-0123456789].*""".toRegex()) ||
             editText.toString() == "")
@@ -178,16 +173,6 @@ class WordsViewModel : ViewModel() {
                 mutableButtonFlow.emit(true)
             }
         }
-//        if (mutableModeFlow.value in arrayOf("error","game_over")) {
-//            viewModelScope.launch {
-//                mutableButtonFlow.emit(true)
-//            }
-//        }
-//        if (mutableModeFlow.value == "game_over") {
-//            viewModelScope.launch {
-//                mutableButtonFlow.emit(true)
-//            }
-//        }
     }
 
 //    Вызывается сразу во Вью. в себе несет экземпляр базы данных приложения, который используется
@@ -197,10 +182,6 @@ class WordsViewModel : ViewModel() {
 //    val repository = RepositoryWordsRoom(db), который передается в Модель.
     fun setDB(db: AppDatabase) {
         val repository = RepositoryWordsRoom(db)
-
         model = Model(repository)
-
     }
-
-
 }

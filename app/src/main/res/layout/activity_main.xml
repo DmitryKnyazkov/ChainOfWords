@@ -8,10 +8,57 @@
     android:gravity="center_horizontal"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/text3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Настоящий рекорд "
+            android:gravity="center"
+            android:textSize="20sp"/>
+        <TextView
+            android:id="@+id/textRecord"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:gravity="center"
+            android:textSize="20sp"/>
+        <TextView
+            android:id="@+id/textWords"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=" слов"
+            android:gravity="center"
+            android:textSize="20sp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/textSetRecord"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Установлен "
+            android:gravity="center"
+            android:textSize="20sp"/>
+        <TextView
+            android:id="@+id/textTimeRecord"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="10 июня 2024"
+            android:gravity="center"
+            android:textSize="20sp"/>
+    </LinearLayout>
+
     <ImageView
         android:id="@+id/image"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:layout_gravity="center"
         android:src="@drawable/ya" />
     <TextView
@@ -20,24 +67,26 @@
         android:layout_height="wrap_content"
         android:text="@string/questionStart"
         android:gravity="center"
-        android:textSize="24sp"
+        android:textSize="20sp"
         />
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:gravity="center"
+        android:orientation="vertical">
         <EditText
             android:id="@+id/editText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:hint="@string/hint"
-            android:textSize="24sp"/>
+            android:textSize="20sp"/>
         <Button
             android:id="@+id/btn"
             android:backgroundTint="@color/green"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="Ввод"/>
     </LinearLayout>
     <LinearLayout
@@ -50,14 +99,14 @@
             android:layout_height="wrap_content"
             android:text="@string/number_of_words"
             android:gravity="center"
-            android:textSize="24sp"/>
+            android:textSize="20sp"/>
         <TextView
             android:id="@+id/textCounter"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
 
             android:gravity="center"
-            android:textSize="24sp"/>
+            android:textSize="20sp"/>
 
     </LinearLayout>
 

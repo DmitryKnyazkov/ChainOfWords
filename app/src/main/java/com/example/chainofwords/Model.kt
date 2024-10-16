@@ -64,6 +64,7 @@ class Model(private val repositoryWords: RepositoryWords = RepositoryWordsList()
 
     val modeFlowFromModel = mutableModeFlowFromModel.asStateFlow()
 
+    val repositoryRecords = RepositoryRecords()
 
 
     suspend fun addNewWord(newWord: String): Boolean {
@@ -135,6 +136,19 @@ class Model(private val repositoryWords: RepositoryWords = RepositoryWordsList()
 
     suspend fun getSizeWords(): Int {
         return repositoryWords.getSizeWords()
+    }
+
+    suspend fun checkRecord(): String {
+        var record = 9
+        var sizeWords = getSizeWords()
+        val oldRecord = repositoryRecords.record
+        return record.toString()
+    }
+    var record = 9
+    suspend fun getRecord(): String {
+        record++
+
+        return record.toString()
     }
 }
 
