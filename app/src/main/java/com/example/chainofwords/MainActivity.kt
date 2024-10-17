@@ -12,6 +12,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.room.Room
+import com.example.chainofwords.Record
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -34,6 +35,8 @@ class MainActivity : AppCompatActivity() {
             applicationContext,
             AppDatabase::class.java, "words"
         ).build()
+
+
 
 //По скольку экземпляр БД приложения в первую очередь нужен во Модуле, через VM передаем его туда.
         wordsViewModel.setDB(db)
@@ -133,7 +136,8 @@ class MainActivity : AppCompatActivity() {
 
             //для того чтобы работал нужно специальный implementation длбавлять в Билд
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                launch { wordsViewModel.analysisAndCreateFlowForView() }
+//                launch { if ( !db.recordsDao().hasTable()) { db.recordsDao().insertAll(com.example.chainofwords.Record(0))} }
+
                 launch {
                     wordsViewModel.buttonFlow.collect {
                         btn.isEnabled = it
@@ -191,11 +195,4 @@ class MainActivity : AppCompatActivity() {
             editText.setText("")
         }
     }
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        viewModel.gameOver()
-//        // Освободить ресурсы, которые больше не нужны активности
-//    }
-
-
 }

@@ -12,8 +12,10 @@ interface RepositoryWords {
     suspend fun getWordByIndex(index: Int): String
     suspend fun clearListChainOfWords()
 
-    suspend fun addRecord(record: Record)
+    suspend fun checkRecord(sizeWords: Int): Boolean
+    suspend fun addRecord(record: Int)
     suspend fun getLastRecord(): String
+    suspend fun hasTable(): Boolean
 
 }
 
@@ -45,9 +47,9 @@ interface RepositoryWords {
 //    }
 //}
 
-class RepositoryRecords() {
-    var record = 0
-}
+//class RepositoryRecords() {
+//    var record = 0
+//}
 
 // Этот класс определяет и отправляет состаяния во VM. в конструкторе private val repositoryWords
 // определяет взаимодействие с какой БД или репозиторием он будет работать.
@@ -56,7 +58,6 @@ class Model(private val repositoryWords: RepositoryWords ) {
     enum class Modes{
         AddNewWord, CheckWord, GameOver
     }
-
 
     private var numberAddingWords = 2
 
@@ -67,7 +68,7 @@ class Model(private val repositoryWords: RepositoryWords ) {
 
     val modeFlowFromModel = mutableModeFlowFromModel.asStateFlow()
 
-    val repositoryRecords = RepositoryRecords()
+//    val repositoryRecords = RepositoryRecords()
 
 
     suspend fun addNewWord(newWord: String): Boolean {
@@ -141,15 +142,23 @@ class Model(private val repositoryWords: RepositoryWords ) {
         return repositoryWords.getSizeWords()
     }
 
-    suspend fun checkRecord(): String {
-        var record = 9
-        var sizeWords = getSizeWords()
-        val oldRecord = repositoryRecords.record
-        return record.toString()
+
+    suspend fun checkRecord(sizeWords: Int): Boolean {
+        val oldRecord = repositoryWords.getLastRecord().toInt()
+        if (sizeWords > oldRecord) {return true}
+        else {return false}
+    }
+
+    suspend fun addRecord(record: Int) {
+        repositoryWords.addRecord(record)
     }
 
     suspend fun getRecord(): String {
         return repositoryWords.getLastRecord()
+    }
+
+    suspend fun hasTable(): Boolean {
+        return repositoryWords.hasTable()
     }
 }
 

@@ -24,6 +24,9 @@ class WordsViewModel : ViewModel() {
         "error" // сообщение Ошибка! Такое слово уже есть в цепочке! Введите слово заново.
     )
 
+    init {
+        viewModelScope.launch {if ( model.hasTable()) { model.addRecord(0) }}
+    }
 
     private val mutableModeFlow = MutableStateFlow(listModes[0])
     val modeFlow = mutableModeFlow.asStateFlow()
@@ -146,9 +149,10 @@ class WordsViewModel : ViewModel() {
             //Это явно костыль
             //modelMode = Model.Modes.AddNewWord
             model.restart()
-            model.checkRecord()
+
             emitCountWords()
             emitRecord()
+            if (model.checkRecord(mutableSizeWordsFlow.value.toInt())) {model.addRecord(mutableSizeWordsFlow.value.toInt())}
         }
     }
 
@@ -183,5 +187,6 @@ class WordsViewModel : ViewModel() {
     fun setDB(db: AppDatabase) {
         val repository = RepositoryWordsRoom(db)
         model = Model(repository)
+
     }
 }

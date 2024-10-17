@@ -3,7 +3,6 @@ package com.example.chainofwords
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
-import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
@@ -64,7 +63,7 @@ interface WordsDao {
 @Entity(tableName = "records")
 data class Record(
     @ColumnInfo(name = "record")
-    val record: String
+    val record: Int
 
 ) {@PrimaryKey(autoGenerate = true)
 var uid: Int = 0 }
@@ -77,11 +76,15 @@ interface RecordsDao {
     @Insert
     suspend fun insertAll(vararg record: Record) // изначально было (vararg records: Record)
 
-
+    @Query("SELECT record FROM records order by uid desc limit 1 < :sizeWords")
+    suspend fun checkRecord(sizeWords: Int): Boolean
 
     // getWordByIndex
     @Query("SELECT record FROM records order by uid desc limit 1") //SELECT record FROM records order by uid desc limit 1
     suspend fun getLastRecord(): String
+
+    @Query("SELECT EXISTS(SELECT 1 FROM records)")
+    fun hasTable(): Boolean
 
 
 }
@@ -130,13 +133,21 @@ class RepositoryWordsRoom(private val roomDatabase: AppDatabase): RepositoryWord
         wordsDao.clear()
     }
 
+    override suspend fun checkRecord(sizeWords: Int): Boolean {
+        return recordsDao.checkRecord(sizeWords)
+    }
 
-    override suspend fun addRecord(record: Record) {
-        recordsDao.insertAll(record) // record: Record
+
+    override suspend fun addRecord(record: Int) {
+        recordsDao.insertAll(Record(record.toInt())) // record: Record
     }
 
     override suspend fun getLastRecord(): String {
         return recordsDao.getLastRecord()
+    }
+
+    override suspend fun hasTable(): Boolean {
+        return recordsDao.hasTable()
     }
 
 }
