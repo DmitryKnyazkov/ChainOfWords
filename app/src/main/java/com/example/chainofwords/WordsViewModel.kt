@@ -11,7 +11,7 @@ import kotlin.properties.Delegates
 
 class WordsViewModel : ViewModel() {
 
-    private var counterViewModel = 0
+    private var counterViewModel = -1
 
     private lateinit var model: Model
 
@@ -31,7 +31,7 @@ class WordsViewModel : ViewModel() {
         var editText: String by Delegates.observable("") { _, _, newValue ->
             changeButtonState(newValue)
         }
-        var counterEnteredWords by Delegates.observable(0) { _, _, _ ->
+        var counterEnteredWords by Delegates.observable(-2) { _, _, _ ->
             scope.launch { analysisAndCreateFlowForView() }
         }
     }
@@ -63,7 +63,7 @@ class WordsViewModel : ViewModel() {
     //Два источника одного значения - оставим одно
     //private var modelMode: Model.Modes = Model.Modes.AddNewWord
 
-    private val historyModes = mutableListOf<Modes>(Modes.AddNewWord, Modes.AddNewWord)
+    private var historyModes = mutableListOf<Modes>(Modes.AddNewWord, Modes.AddNewWord)
 
     //Название функции отражает то, что должен знать View,
     // а не внутренние алгоритмы ViewModel
@@ -74,9 +74,12 @@ class WordsViewModel : ViewModel() {
                 historyModes[1] = historyModes[0]
                 historyModes[0] = it
 
-                state.counterEnteredWords = 0
-                counterViewModel = 0
-//                analysisAndCreateFlowForView()
+                if (counterViewModel>=0)
+                    {
+                        state.counterEnteredWords = 0
+                }
+                counterViewModel++
+                analysisAndCreateFlowForView()
             }
         }
     }
@@ -86,7 +89,7 @@ class WordsViewModel : ViewModel() {
         state.mutableModeFlow.emit(
             //При такой реализации проще понять, все ли варианты перебраны
             //так же толоко один вызов emit
-            mapMode(historyModes, state.counterEnteredWords)
+            mapMode( model.modeFlowFromModel.value, state.counterEnteredWords)
         )
 
 //        if (nowInFlowModeFlowFromModel == Model.Modes.CheckWord && nowInFlowModeCounterForCheck_WordFromModel>0){}
@@ -94,71 +97,70 @@ class WordsViewModel : ViewModel() {
 
     // Эта функция сопоставляет текущее сосотояние и счетчик введеных слов и формирует сигнал в виде
 //    определенной строки. она может быть частью функции analysisAndCreateFlowForView()
-    private fun mapMode(
-        historyModes: MutableList<Modes>, counterEnteredWords: Int
-    ): String {
-        when (counterEnteredWords) {
-            0 -> return when (historyModes) {
-                mutableListOf(
-                    Modes.AddNewWord, Modes.AddNewWord
-                ) -> return "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
-                mutableListOf(
-                    Modes.AddNewWord, Modes.GameOver
-                ) -> return "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
-                mutableListOf(
-                    Modes.CheckWord, Modes.AddNewWord
-                ) -> return "answerStart" // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
-                mutableListOf(
-                    Modes.GameOver, Modes.CheckWord
-                ) -> return "game_over" // GameOver Вы ответили неверно. Игра закончилась.
-                else -> {return "game_over"}
-            }
-
-            1 -> return when (historyModes[0]) {
-                Modes.AddNewWord -> "inputSecondWord" // AddNewWord Введите следующее слово в цепочку
-                Modes.GameOver -> "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
-                Modes.CheckWord -> "next_word" // CheckWord Вы ответили верно. Вводите следующее слово
-            }
-
-            else -> return when (historyModes[0]) {
-                Modes.AddNewWord -> "inputSecondWord" // AddNewWord Введите следующее слово в цепочку
-                Modes.GameOver -> "game_over" // GameOver Вы ответили неверно. Игра закончилась.
-                Modes.CheckWord -> "next_word" // CheckWord Вы ответили верно. Вводите следующее слово
-            }
-        }
-    }
-
-
-
 //    private fun mapMode(
-//        modes: Model.Modes,
-//        counterEnteredWords: Int
-//    ) = when (modes) {
-//        Model.Modes.AddNewWord ->
-//            when (counterEnteredWords) {
-//                0 -> "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
-//                1 -> "inputSecondWord" // AddNewWord Введите следующее слово в цепочку
-//                else -> "new_word" // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
+//        historyModes: MutableList<Modes>, counterEnteredWords: Int
+//    ): String {
+//        when (counterEnteredWords) {
+//            0 -> return when (historyModes) {
+//                mutableListOf(
+//                    Modes.AddNewWord, Modes.AddNewWord
+//                ) -> return "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
+//                mutableListOf(
+//                    Modes.AddNewWord, Modes.GameOver
+//                ) -> return "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
+//                mutableListOf(
+//                    Modes.CheckWord, Modes.AddNewWord
+//                ) -> return "answerStart" // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
+//                mutableListOf(
+//                    Modes.GameOver, Modes.CheckWord
+//                ) -> return "game_over" // GameOver Вы ответили неверно. Игра закончилась.
+//                else -> {return "game_over"}
 //            }
 //
-//        Model.Modes.CheckWord ->
-//            when (counterEnteredWords) {
-//                0 -> "answerStart" // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
-//                else -> "next_word" // CheckWord Вы ответили верно. Вводите следующее слово
+//            1 -> return when (historyModes[0]) {
+//                Modes.AddNewWord -> "inputSecondWord" // AddNewWord Введите следующее слово в цепочку
+//                Modes.GameOver -> "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
+//                Modes.CheckWord -> "next_word" // CheckWord Вы ответили верно. Вводите следующее слово
 //            }
 //
-//        Model.Modes.GameOver -> "game_over"
+//            else -> return when (historyModes[0]) {
+//                Modes.AddNewWord -> "inputSecondWord" // AddNewWord Введите следующее слово в цепочку
+//                Modes.GameOver -> "game_over" // GameOver Вы ответили неверно. Игра закончилась.
+//                Modes.CheckWord -> "next_word" // CheckWord Вы ответили верно. Вводите следующее слово
+//            }
+//        }
 //    }
+
+
+
+    private fun mapMode(
+        modes: Model.Modes,
+        counterEnteredWords: Int
+    ) = when (modes) {
+        Model.Modes.AddNewWord ->
+            when (counterEnteredWords) {
+                -2 -> "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
+                0 -> "new_word" // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
+                -1 -> "inputSecondWord" // AddNewWord Введите следующее слово в цепочку
+                else -> "new_word" // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
+
+            }
+
+        Model.Modes.CheckWord ->
+            when (counterEnteredWords) {
+                0 -> "answerStart" // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
+                else -> "next_word" // CheckWord Вы ответили верно. Вводите следующее слово
+            }
+
+        Model.Modes.GameOver -> "game_over"
+    }
 
     // транспортирует из View в Model задачу проверить введенное слово
     fun checkWord(word: String) {
 
         scope.launch {
+            state.counterEnteredWords++
             model.checkWord(word)
-            if (counterViewModel == 0) {
-                state.counterEnteredWords++
-                counterViewModel++
-            } else counterViewModel++
 
         }
     }
@@ -173,20 +175,15 @@ class WordsViewModel : ViewModel() {
         //Не надо прибавлять заранее
         //counterEnteredWords++
         scope.launch {
+            state.counterEnteredWords++
             val resultRecording = model.addNewWord(newWord)
 
             if (!resultRecording) {
 //              Если придет фолс, то имитем "error" ошибку и counterEnteredWords откати назад
-//                counterEnteredWords--
+                state.counterEnteredWords--
                 state.mutableModeFlow.emit("error")
-            } else {
-                if (counterViewModel == 0) {
-                    state.counterEnteredWords++
-                    counterViewModel++
-                } else counterViewModel++
-                emitCountWords()
             }
-
+            emitCountWords()
         }
     }
 
@@ -205,7 +202,8 @@ class WordsViewModel : ViewModel() {
                 model.addRecord(mutableSizeWordsFlow.value.toInt())
             }
             state.mutableModeFlow.emit(listModes[0])
-            state.counterEnteredWords = 0
+            state.counterEnteredWords = -2
+            counterViewModel = -1
             //Это явно костыль
             //modelMode = Model.Modes.AddNewWord
             model.restart()
