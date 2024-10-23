@@ -12,7 +12,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.room.Room
-import com.example.chainofwords.Record
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -41,10 +40,10 @@ class MainActivity : AppCompatActivity() {
 //По скольку экземпляр БД приложения в первую очередь нужен во Модуле, через VM передаем его туда.
         wordsViewModel.setDB(db)
 
-        wordsViewModel.emitRecord()
+//        wordsViewModel.emitRecord()
 
         // Вызывается чтобы облулить значения в модели
-        wordsViewModel.gameOver()
+//        wordsViewModel.gameOver()
 
         var modes: String = "questionStart"
 
@@ -143,7 +142,7 @@ class MainActivity : AppCompatActivity() {
                         btn.isEnabled = it
                     }
                 }
-                launch { wordsViewModel.onShow() }
+
                 launch { wordsViewModel.sizeWordsFlow.collect {textCounter.text = it.toString()} }
                 launch { wordsViewModel.recordFlow.collect {textRecord.text = it.toString()} }
                 launch {
@@ -151,7 +150,7 @@ class MainActivity : AppCompatActivity() {
                         modes = it
 
                         setButtonTitle(modes)
-                        wordsViewModel.openButton(editText.getText().toString(), modes)
+                        wordsViewModel.changeEditText(editText.getText().toString())
 
                         when (modes) {
                             "questionStart" -> questionStart()
@@ -164,7 +163,9 @@ class MainActivity : AppCompatActivity() {
                         }
   //                      counterForStart++
                     }
+
                 }
+                launch { wordsViewModel.onShow() }
             }
         }
 
@@ -180,7 +181,7 @@ class MainActivity : AppCompatActivity() {
 //            } else btn.isEnabled = true
 //        }
 
-        editText.addTextChangedListener { wordsViewModel.openButton(editText.getText().toString(), modes) }
+        editText.addTextChangedListener { wordsViewModel.changeEditText(editText.getText().toString()) }
 
         btn.setOnClickListener {
             when (modes) {

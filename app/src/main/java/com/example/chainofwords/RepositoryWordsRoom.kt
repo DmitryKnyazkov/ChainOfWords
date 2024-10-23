@@ -8,6 +8,7 @@ import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import kotlinx.coroutines.flow.Flow
 
 
 // В этом файле описывается БД Room
@@ -76,15 +77,15 @@ interface RecordsDao {
     @Insert
     suspend fun insertAll(vararg record: Record) // изначально было (vararg records: Record)
 
-    @Query("SELECT record FROM records order by uid desc limit 1 < :sizeWords")
-    suspend fun checkRecord(sizeWords: Int): Boolean
+    @Query("SELECT record < :sizeWords FROM records order by uid desc limit 1 ")
+    suspend fun checkRecord(sizeWords: Int): Boolean?
 
     // getWordByIndex
     @Query("SELECT record FROM records order by uid desc limit 1") //SELECT record FROM records order by uid desc limit 1
-    suspend fun getLastRecord(): String
+    fun getLastRecord(): Flow<Int?>
 
-    @Query("SELECT EXISTS(SELECT 1 FROM records)")
-    fun hasTable(): Boolean
+//    @Query("SELECT EXISTS(SELECT 1 FROM records)")
+//    fun hasTable(): Boolean
 
 
 }
@@ -133,7 +134,7 @@ class RepositoryWordsRoom(private val roomDatabase: AppDatabase): RepositoryWord
         wordsDao.clear()
     }
 
-    override suspend fun checkRecord(sizeWords: Int): Boolean {
+    override suspend fun checkRecord(sizeWords: Int): Boolean? {
         return recordsDao.checkRecord(sizeWords)
     }
 
@@ -142,12 +143,12 @@ class RepositoryWordsRoom(private val roomDatabase: AppDatabase): RepositoryWord
         recordsDao.insertAll(Record(record.toInt())) // record: Record
     }
 
-    override suspend fun getLastRecord(): String {
+    override fun getLastRecord(): Flow<Int?> {
         return recordsDao.getLastRecord()
     }
 
-    override suspend fun hasTable(): Boolean {
-        return recordsDao.hasTable()
-    }
+//    override suspend fun hasTable(): Boolean {
+//        return recordsDao.hasTable()
+//    }
 
 }
