@@ -1,8 +1,11 @@
 package com.example.chainofwords
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 // Это скорее вспомогательный абстрактный класс, чтобы не забыть какие функции нужно реализовать
 // в классе который будет управлять БД
@@ -13,11 +16,31 @@ interface RepositoryWords {
     suspend fun getWordByIndex(index: Int): String
     suspend fun clearListChainOfWords()
 
+
     suspend fun checkRecord(sizeWords: Int): Boolean?
     suspend fun addRecord(record: Int)
     fun getLastRecord(): Flow<Int?>
-//    suspend fun hasTable(): Boolean
 
+
+    suspend fun modesInsertAll( counterViewModel: Int,
+                                mutableModeFlow: String,
+                                editText: String,
+                                counterEnteredWords: Int,
+                                numberAddingWords: Int,
+                                mutableModeFlowFromModel: String,
+                                counterForCheckWord: Int)
+
+    suspend fun upDateMode(counterViewModel: Int,
+                           mutableModeFlow: String,
+                           editText: String,
+                           counterEnteredWords: Int,
+                           numberAddingWords: Int,
+                           mutableModeFlowFromModel: String,
+                           counterForCheckWord: Int)
+
+    fun getAppModes(): List<AppModes?>
+
+    fun saveExist(): Boolean
 }
 
 
@@ -42,7 +65,7 @@ class Model(private val repositoryWords: RepositoryWords ) {
 
 
 
-
+    val scope = CoroutineScope(Dispatchers.IO)
 
 
     val modeFlowFromModel = state.mutableModeFlowFromModel.asStateFlow()
@@ -134,9 +157,88 @@ class Model(private val repositoryWords: RepositoryWords ) {
         return repositoryWords.getLastRecord()
     }
 
-//    suspend fun hasTable(): Boolean {
-//        return repositoryWords.hasTable()
-//    }
+
+    suspend fun modesInsertAll(counterViewModel: Int,
+                               mutableModeFlow: String,
+                               editText: String,
+                               counterEnteredWords: Int,
+                               numberAddingWords: Int,
+                               mutableModeFlowFromModel: String,
+                               counterForCheckWord: Int) {
+        repositoryWords.modesInsertAll(counterViewModel,
+            mutableModeFlow,
+            editText,
+            counterEnteredWords,
+            numberAddingWords,
+            mutableModeFlowFromModel,
+            counterForCheckWord)
+    }
+
+    suspend fun upDateMode(counterViewModel: Int,
+                   mutableModeFlow: String,
+                   editText: String,
+                   counterEnteredWords: Int,
+                   numberAddingWords: Int,
+                   mutableModeFlowFromModel: String,
+                   counterForCheckWord: Int) {
+        repositoryWords.upDateMode(counterViewModel,
+            mutableModeFlow,
+            editText,
+            counterEnteredWords,
+            numberAddingWords,
+            mutableModeFlowFromModel,
+            counterForCheckWord)
+    }
+
+    fun getAppModes(): List<AppModes?> {
+        val listFromDB = repositoryWords.getAppModes()
+        if (listFromDB.isEmpty()) {
+            state.numberAddingWords =  2
+            state.mutableModeFlowFromModel.value =  Modes.AddNewWord
+            state.counterForCheckWord = 0
+        }
+        else {
+            state.numberAddingWords = listFromDB[0]?.numberAddingWords ?: 2
+            state.mutableModeFlowFromModel.value = when (listFromDB[0]?.mutableModeFlowFromModel) {
+                "AddNewWord" -> Modes.AddNewWord
+                "CheckWord" -> Modes.CheckWord
+                "GameOver"-> Modes.GameOver
+                else -> {Modes.GameOver}
+            }
+            state.counterForCheckWord = listFromDB[0]?.counterForCheckWord ?: 0
+        }
+
+        return listFromDB
+    }
+
+    fun saveModesFromViewModel(counterViewModel: Int, mutableModeFlow: String, editText: String, counterEnteredWords: Int){
+        scope.launch {
+//            var listModelDB = getAppModes()
+            if (!saveExist()) {
+                modesInsertAll(counterViewModel,
+                    mutableModeFlow,
+                    editText,
+                    counterEnteredWords,
+                    state.numberAddingWords,
+                    state.mutableModeFlowFromModel.value.toString(),
+                    state.counterForCheckWord)
+            }
+            else upDateMode(counterViewModel,
+                mutableModeFlow,
+                editText,
+                counterEnteredWords,
+                state.numberAddingWords,
+                state.mutableModeFlowFromModel.value.toString(),
+                state.counterForCheckWord)
+        }
+        }
+
+    fun saveExist(): Boolean{
+        return repositoryWords.saveExist()
+    }
+
+}
+
 
     ////Этот класс использовался, когда цепочка слов хранилась в списке, т.е. по сути в этом классе.
 //// когда появилась БД то он уже не используется.
@@ -169,6 +271,4 @@ class Model(private val repositoryWords: RepositoryWords ) {
 //    var record = 0
 //}
 
-
-}
 

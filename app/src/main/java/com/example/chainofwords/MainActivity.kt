@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 
 //По скольку экземпляр БД приложения в первую очередь нужен во Модуле, через VM передаем его туда.
         wordsViewModel.setDB(db)
+        wordsViewModel.getAppModes()
 
 //        wordsViewModel.emitRecord()
 
@@ -61,6 +62,7 @@ class MainActivity : AppCompatActivity() {
                 else -> "Ввод"
             }
         }
+
 
         fun questionStart() {
             textComand.text = getString(R.string.questionStart)
@@ -168,18 +170,6 @@ class MainActivity : AppCompatActivity() {
                 launch { wordsViewModel.onShow() }
             }
         }
-
-
-//        fun openButton() {
-//
-//            if (editText.getText()
-//                    .contains(""".*[~?!"№;%:?*())+=<>? !@#$}{'$'%^&*+-0123456789].*""".toRegex()) ||
-//                editText.getText()
-//                    .toString() == ""
-//            ) {
-//                btn.isEnabled = false
-//            } else btn.isEnabled = true
-//        }
 
         editText.addTextChangedListener { wordsViewModel.changeEditText(editText.getText().toString()) }
 

@@ -3,6 +3,8 @@ package com.example.chainofwords
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chainofwords.Model.Modes
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -11,7 +13,9 @@ import kotlin.properties.Delegates
 
 class WordsViewModel : ViewModel() {
 
-    private var counterViewModel = -1
+
+    private val scope = viewModelScope
+    private val scope2 = CoroutineScope(Dispatchers.IO)
 
     private lateinit var model: Model
 
@@ -27,20 +31,55 @@ class WordsViewModel : ViewModel() {
 
 
     private val state = object {
+        var counterViewModel = -1
         val mutableModeFlow = MutableStateFlow(listModes[0])
-        var editText: String by Delegates.observable("") { _, _, newValue ->
-            changeButtonState(newValue)
-        }
-        var counterEnteredWords by Delegates.observable(-2) { _, _, _ ->
+        var editText: String by Delegates.observable("") { _, _, newValue -> changeButtonState(newValue) }
+        var counterEnteredWords by Delegates.observable(-2) { _, _, newCounterEnteredWords ->
+
             scope.launch { analysisAndCreateFlowForView() }
+            model.saveModesFromViewModel(counterViewModel, mutableModeFlow.toString(), editText, newCounterEnteredWords)
         }
     }
-// входит в состояние
+
+    fun getAppModes() {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (!model.saveExist()) {
+                state.counterViewModel = -2
+                state.mutableModeFlow.value = "questionStart"
+                state.editText = ""
+                state.counterEnteredWords  = -1
+            }
+            else {
+                val listFromDB = model.getAppModes()
+                state.counterViewModel = listFromDB[0]?.counterViewModel ?: -2
+                state.mutableModeFlow.value = listFromDB[0]?.mutableModeFlow ?: "questionStart"
+                state.editText = listFromDB[0]?.editText ?: ""
+                state.counterEnteredWords  = listFromDB[0]?.counterEnteredWords ?: -1
+            }
+        }
+
+    }
+
+
+
+//    init {
+//        if (!model.saveExist()) {
+//            state.counterViewModel = -2
+//            state.mutableModeFlow.value = "questionStart"
+//            state.editText = ""
+//            state.counterEnteredWords  = -1
+//        }
+//        else {
+//            val listFromDB = model.getAppModes()
+//            state.counterViewModel = listFromDB[0]?.counterViewModel ?: -2
+//            state.mutableModeFlow.value = listFromDB[0]?.mutableModeFlow ?: "questionStart"
+//            state.editText = listFromDB[0]?.editText ?: ""
+//            state.counterEnteredWords  = listFromDB[0]?.counterEnteredWords ?: -1
+//        }
+//
+//    }
 
     val modeFlow = state.mutableModeFlow.asStateFlow()
-
-    // в состояние входит значение editText.
-
 
     private val mutableButtonFlow = MutableStateFlow(false)
     val buttonFlow = mutableButtonFlow.asStateFlow()
@@ -51,19 +90,10 @@ class WordsViewModel : ViewModel() {
     private val mutableRecordFlow = MutableStateFlow<Int?>(null)
     val recordFlow = mutableRecordFlow.asStateFlow()
 
-    private val scope = viewModelScope
-
-    //При изменении свойства запускаем изменение mode
-    // входит в состояние.
-//    private var counterEnteredWords by Delegates.observable(0) {
-//            _, _, _ -> scope.launch { analysisAndCreateFlowForView() }
-//    }
 
 
-    //Два источника одного значения - оставим одно
-    //private var modelMode: Model.Modes = Model.Modes.AddNewWord
 
-    private var historyModes = mutableListOf<Modes>(Modes.AddNewWord, Modes.AddNewWord)
+
 
     //Название функции отражает то, что должен знать View,
     // а не внутренние алгоритмы ViewModel
@@ -71,14 +101,11 @@ class WordsViewModel : ViewModel() {
         //Лучше запустить от имени viewModel
         scope.launch {
             model.modeFlowFromModel.collect {
-                historyModes[1] = historyModes[0]
-                historyModes[0] = it
-
-                if (counterViewModel>=0)
+                if (state.counterViewModel>=0)
                     {
                         state.counterEnteredWords = 0
                 }
-                counterViewModel++
+                state.counterViewModel++
                 analysisAndCreateFlowForView()
             }
         }
@@ -92,45 +119,7 @@ class WordsViewModel : ViewModel() {
             mapMode( model.modeFlowFromModel.value, state.counterEnteredWords)
         )
 
-//        if (nowInFlowModeFlowFromModel == Model.Modes.CheckWord && nowInFlowModeCounterForCheck_WordFromModel>0){}
     }
-
-    // Эта функция сопоставляет текущее сосотояние и счетчик введеных слов и формирует сигнал в виде
-//    определенной строки. она может быть частью функции analysisAndCreateFlowForView()
-//    private fun mapMode(
-//        historyModes: MutableList<Modes>, counterEnteredWords: Int
-//    ): String {
-//        when (counterEnteredWords) {
-//            0 -> return when (historyModes) {
-//                mutableListOf(
-//                    Modes.AddNewWord, Modes.AddNewWord
-//                ) -> return "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
-//                mutableListOf(
-//                    Modes.AddNewWord, Modes.GameOver
-//                ) -> return "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
-//                mutableListOf(
-//                    Modes.CheckWord, Modes.AddNewWord
-//                ) -> return "answerStart" // CheckWord Цепочка слов создана.Воспроизведем ее. Введите слово
-//                mutableListOf(
-//                    Modes.GameOver, Modes.CheckWord
-//                ) -> return "game_over" // GameOver Вы ответили неверно. Игра закончилась.
-//                else -> {return "game_over"}
-//            }
-//
-//            1 -> return when (historyModes[0]) {
-//                Modes.AddNewWord -> "inputSecondWord" // AddNewWord Введите следующее слово в цепочку
-//                Modes.GameOver -> "questionStart" // AddNewWord Создадим новую цепочку слов.Введите слово
-//                Modes.CheckWord -> "next_word" // CheckWord Вы ответили верно. Вводите следующее слово
-//            }
-//
-//            else -> return when (historyModes[0]) {
-//                Modes.AddNewWord -> "inputSecondWord" // AddNewWord Введите следующее слово в цепочку
-//                Modes.GameOver -> "game_over" // GameOver Вы ответили неверно. Игра закончилась.
-//                Modes.CheckWord -> "next_word" // CheckWord Вы ответили верно. Вводите следующее слово
-//            }
-//        }
-//    }
-
 
 
     private fun mapMode(
@@ -168,7 +157,6 @@ class WordsViewModel : ViewModel() {
     //    собирает информацию о количестве слов в цепочке и передает ее View.
     private fun emitCountWords() = scope.launch { mutableSizeWordsFlow.emit(model.getSizeWords()) }
 
-//    fun emitRecord() = scope.launch { mutableRecordFlow.emit(model.getRecord()) }
 
     //    добавляет через Модел слова в цепочку. и если слово уже есть в цепочке имитет ошибку во View
     fun appNewWord(newWord: String) {
@@ -203,9 +191,8 @@ class WordsViewModel : ViewModel() {
             }
             state.mutableModeFlow.emit(listModes[0])
             state.counterEnteredWords = -2
-            counterViewModel = -1
-            //Это явно костыль
-            //modelMode = Model.Modes.AddNewWord
+            state.counterViewModel = -1
+
             model.restart()
 
             emitCountWords()

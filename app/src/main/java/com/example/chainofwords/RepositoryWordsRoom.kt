@@ -60,7 +60,7 @@ interface WordsDao {
 
 
 
-//Делаю новую таблицу\
+//Делаю новую таблицу для рекордов
 @Entity(tableName = "records")
 data class Record(
     @ColumnInfo(name = "record")
@@ -83,12 +83,67 @@ interface RecordsDao {
     // getWordByIndex
     @Query("SELECT record FROM records order by uid desc limit 1") //SELECT record FROM records order by uid desc limit 1
     fun getLastRecord(): Flow<Int?>
-
-//    @Query("SELECT EXISTS(SELECT 1 FROM records)")
-//    fun hasTable(): Boolean
-
-
 }
+
+
+//Делаю новую таблицу для сохранения состояния
+@Entity(tableName = "appModes")
+data class AppModes(
+    @ColumnInfo(name = "counterViewModel")
+    val counterViewModel: Int,
+
+    @ColumnInfo(name = "mutableModeFlow")
+    val mutableModeFlow: String,
+
+    @ColumnInfo(name = "editText")
+    val editText: String,
+
+    @ColumnInfo(name = "counterEnteredWords")
+    val counterEnteredWords: Int,
+
+
+    @ColumnInfo(name = "numberAddingWords")
+    val numberAddingWords: Int,
+
+    @ColumnInfo(name = "mutableModeFlowFromModel")
+    val mutableModeFlowFromModel: String,
+
+    @ColumnInfo(name = "counterForCheckWord")
+    val counterForCheckWord: Int,
+
+) {@PrimaryKey(autoGenerate = true)
+var uid: Int = 0 }
+
+
+@Dao
+interface AppModesDao {
+//    функция должна вносить в раблицу первую строку
+    @Insert
+    suspend fun insertAll(vararg appModes: AppModes)
+
+//    функция должна возвращать значения во всех колонках
+//    @Query("SELECT * from appModes Where uid = 1")
+    @Query("SELECT * FROM appModes ORDER BY uid DESC LIMIT 1")
+    fun getAppMode() :List<AppModes?>
+
+//    Функция должна обновлять значения в единственной строке
+    @Query("UPDATE appModes SET counterViewModel = :counterViewModel, mutableModeFlow = :mutableModeFlow, " +
+            "editText = :editText, counterEnteredWords = :counterEnteredWords," +
+            "numberAddingWords = :numberAddingWords, mutableModeFlowFromModel = :mutableModeFlowFromModel, " +
+            "counterForCheckWord = :counterForCheckWord Where uid=1")
+    suspend fun upDateMode(counterViewModel: Int,
+                           mutableModeFlow: String,
+                           editText: String,
+                           counterEnteredWords: Int,
+                           numberAddingWords: Int,
+                           mutableModeFlowFromModel: String,
+                           counterForCheckWord: Int)
+
+    @Query("SELECT exists (SELECT * FROM appModes ORDER BY uid DESC LIMIT 1)")
+    fun saveExist(): Boolean
+}
+
+
 
 
 
@@ -102,10 +157,11 @@ interface RecordsDao {
 // entities = [Word::class] - здесь информация о таблице,
 // abstract fun wordsDao(): WordsDao - здесь информация о метадах.
 // Экземпляр этого класса особым образом создается только там где есть контекст, т.е. в активити
-@Database(entities = [Word::class, Record::class], version = 1)
+@Database(entities = [Word::class, Record::class, AppModes::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun wordsDao(): WordsDao
     abstract fun recordsDao(): RecordsDao
+    abstract fun appModesDao(): AppModesDao
 }
 
 // Этот класс позволяет взаимодействовать с базой данных
@@ -113,6 +169,7 @@ class RepositoryWordsRoom(private val roomDatabase: AppDatabase): RepositoryWord
 
     private val wordsDao = roomDatabase.wordsDao()
     private val recordsDao = roomDatabase.recordsDao()
+    private val appModesDao = roomDatabase.appModesDao()
 
     override suspend fun addNewWord(newWord: String) {
         wordsDao.insertAll(Word(newWord))
@@ -147,8 +204,43 @@ class RepositoryWordsRoom(private val roomDatabase: AppDatabase): RepositoryWord
         return recordsDao.getLastRecord()
     }
 
-//    override suspend fun hasTable(): Boolean {
-//        return recordsDao.hasTable()
-//    }
+
+// Функция записывает первые значения в первую и единственную строку в табдице.
+    override suspend fun modesInsertAll(counterViewModel: Int,
+                                        mutableModeFlow: String,
+                                        editText: String,
+                                        counterEnteredWords: Int,
+                                        numberAddingWords: Int,
+                                        mutableModeFlowFromModel: String,
+                                        counterForCheckWord: Int) {
+        appModesDao.insertAll(AppModes(counterViewModel,
+            mutableModeFlow,
+            editText,
+            counterEnteredWords,
+            numberAddingWords,
+            mutableModeFlowFromModel,
+            counterForCheckWord))
+    }
+
+
+    //    функция должна возвращать значения во всех колонках
+    override  fun getAppModes(): List<AppModes?> {
+        return appModesDao.getAppMode()
+    }
+
+    //    Функция должна обновлять значения в единственной строке
+    override suspend fun upDateMode(counterViewModel: Int, mutableModeFlow: String, editText: String, counterEnteredWords: Int, numberAddingWords: Int, mutableModeFlowFromModel: String, counterForCheckWord: Int){
+        appModesDao.upDateMode(counterViewModel,
+            mutableModeFlow,
+            editText,
+            counterEnteredWords,
+            numberAddingWords,
+            mutableModeFlowFromModel,
+            counterForCheckWord)
+    }
+
+    override fun saveExist(): Boolean {
+        return appModesDao.saveExist()
+    }
 
 }
