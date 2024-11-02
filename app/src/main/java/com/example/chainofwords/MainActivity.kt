@@ -46,7 +46,8 @@ class MainActivity : AppCompatActivity() {
         // Вызывается чтобы облулить значения в модели
 //        wordsViewModel.gameOver()
 
-        var modes: String = "questionStart"
+//        var modes: String = "questionStart"
+        lateinit var modes: String
 
         val textComand: TextView = findViewById(R.id.textComand)
         val editText = findViewById<EditText>(R.id.editText)

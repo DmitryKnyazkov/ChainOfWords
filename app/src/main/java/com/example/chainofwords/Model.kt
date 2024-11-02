@@ -1,11 +1,14 @@
 package com.example.chainofwords
 
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlin.properties.Delegates
 
 // Это скорее вспомогательный абстрактный класс, чтобы не забыть какие функции нужно реализовать
 // в классе который будет управлять БД
@@ -52,20 +55,30 @@ class Model(private val repositoryWords: RepositoryWords ) {
     enum class Modes{
         AddNewWord, CheckWord, GameOver
     }
+    val scope = CoroutineScope(Dispatchers.IO)
 
     private val state = object {
+
+        init {
+            CoroutineScope(Dispatchers.IO).launch { mutableModeFlowFromModel.collect{ log()} }
+        }
+
         // numberAddingWords контролирует количество вводимых слов. в начале игры это 2 слова,
-        var numberAddingWords = 2
+        var numberAddingWords: Int by Delegates.observable(2) {_, _, _ -> log()}
         //  по этому потоку передается состояие. либо "режим добавления нового слова", либо "режим сравнивания слов с цепочкой"
         val mutableModeFlowFromModel = MutableStateFlow(Modes.AddNewWord)
         //   В этой переменной текущий номер слова в цепи для сравнения или количество слов даваемых в начале игры
-        var counterForCheckWord = 0
+        var counterForCheckWord: Int by Delegates.observable(0) {_, _, _ -> log()}
+
+        fun log() {
+            Log.d("wordsStateModel", "numberAddingWords: $numberAddingWords, mode: ${mutableModeFlowFromModel.value}, counterForCheckWord: $counterForCheckWord" )
+        }
     }
 
 
 
 
-    val scope = CoroutineScope(Dispatchers.IO)
+
 
 
     val modeFlowFromModel = state.mutableModeFlowFromModel.asStateFlow()
@@ -198,6 +211,7 @@ class Model(private val repositoryWords: RepositoryWords ) {
             state.counterForCheckWord = 0
         }
         else {
+            Log.d("wordsState", "${listFromDB[0]}" )
             state.numberAddingWords = listFromDB[0]?.numberAddingWords ?: 2
             state.mutableModeFlowFromModel.value = when (listFromDB[0]?.mutableModeFlowFromModel) {
                 "AddNewWord" -> Modes.AddNewWord
@@ -214,24 +228,26 @@ class Model(private val repositoryWords: RepositoryWords ) {
     fun saveModesFromViewModel(counterViewModel: Int, mutableModeFlow: String, editText: String, counterEnteredWords: Int){
         scope.launch {
 //            var listModelDB = getAppModes()
-            if (!saveExist()) {
-                modesInsertAll(counterViewModel,
-                    mutableModeFlow,
-                    editText,
-                    counterEnteredWords,
-                    state.numberAddingWords,
-                    state.mutableModeFlowFromModel.value.toString(),
-                    state.counterForCheckWord)
-            }
-            else upDateMode(counterViewModel,
+//            if (saveExist()) {
+            upDateMode(counterViewModel,
                 mutableModeFlow,
                 editText,
                 counterEnteredWords,
                 state.numberAddingWords,
                 state.mutableModeFlowFromModel.value.toString(),
                 state.counterForCheckWord)
+//            }
+//            else {
+//                modesInsertAll(counterViewModel,
+//                    mutableModeFlow,
+//                    editText,
+//                    counterEnteredWords,
+//                    state.numberAddingWords,
+//                    state.mutableModeFlowFromModel.value.toString(),
+//                    state.counterForCheckWord)
+//            }
         }
-        }
+    }
 
     fun saveExist(): Boolean{
         return repositoryWords.saveExist()

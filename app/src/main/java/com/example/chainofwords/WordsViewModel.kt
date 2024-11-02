@@ -1,5 +1,6 @@
 package com.example.chainofwords
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chainofwords.Model.Modes
@@ -31,30 +32,52 @@ class WordsViewModel : ViewModel() {
 
 
     private val state = object {
-        var counterViewModel = -1
+
+        var counterViewModel: Int by Delegates.observable(-1) {_,_,_ -> log()}
         val mutableModeFlow = MutableStateFlow(listModes[0])
-        var editText: String by Delegates.observable("") { _, _, newValue -> changeButtonState(newValue) }
+        var editText: String by Delegates.observable("") { _, _, newValue ->
+            changeButtonState(newValue)
+            log()
+        }
+
+
+
         var counterEnteredWords by Delegates.observable(-2) { _, _, newCounterEnteredWords ->
 
             scope.launch { analysisAndCreateFlowForView() }
-            model.saveModesFromViewModel(counterViewModel, mutableModeFlow.toString(), editText, newCounterEnteredWords)
+
+            log()
         }
+
+        fun log() {
+            if (this@WordsViewModel::model.isInitialized)
+            model.saveModesFromViewModel(counterViewModel, mutableModeFlow.value, editText, counterEnteredWords)
+            Log.d("wordsStateViewModel", "counterViewModel: $counterViewModel, mutableModeFlow: ${mutableModeFlow.value}, editText: $editText, counterEnteredWords: $counterEnteredWords")
+        }
+
+        init {
+            scope2.launch { mutableModeFlow.collect{ log()} }
+        }
+
+
     }
 
     fun getAppModes() {
         CoroutineScope(Dispatchers.IO).launch {
-            if (!model.saveExist()) {
-                state.counterViewModel = -2
-                state.mutableModeFlow.value = "questionStart"
-                state.editText = ""
-                state.counterEnteredWords  = -1
-            }
-            else {
+            if (model.saveExist()) {
                 val listFromDB = model.getAppModes()
                 state.counterViewModel = listFromDB[0]?.counterViewModel ?: -2
                 state.mutableModeFlow.value = listFromDB[0]?.mutableModeFlow ?: "questionStart"
                 state.editText = listFromDB[0]?.editText ?: ""
                 state.counterEnteredWords  = listFromDB[0]?.counterEnteredWords ?: -1
+            }
+            else {
+                state.counterViewModel = -2
+                state.mutableModeFlow.value = "questionStart"
+                state.editText = ""
+                state.counterEnteredWords  = -2
+
+
             }
         }
 
@@ -101,11 +124,19 @@ class WordsViewModel : ViewModel() {
         //Лучше запустить от имени viewModel
         scope.launch {
             model.modeFlowFromModel.collect {
-                if (state.counterViewModel>=0)
-                    {
+                Log.d("wordsState", "get new state model")
+                if (it == Modes.CheckWord){
+                    if (state.mutableModeFlow.value == "new_word"){
                         state.counterEnteredWords = 0
+                    }
                 }
-                state.counterViewModel++
+
+
+//                if (state.counterViewModel>=0)
+//                    {
+//                        state.counterEnteredWords = 0
+//                }
+//                state.counterViewModel++
                 analysisAndCreateFlowForView()
             }
         }
@@ -132,7 +163,6 @@ class WordsViewModel : ViewModel() {
                 0 -> "new_word" // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
                 -1 -> "inputSecondWord" // AddNewWord Введите следующее слово в цепочку
                 else -> "new_word" // AddNewWord Вы верно воспроизвели всю цепочку слов. Увеличем цепочку. Введите новое слово
-
             }
 
         Model.Modes.CheckWord ->
